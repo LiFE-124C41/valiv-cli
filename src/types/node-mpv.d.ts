@@ -16,9 +16,15 @@ declare module 'node-mpv' {
         start(): Promise<void>;
         play(): Promise<void>;
         pause(): Promise<void>;
+        togglePause(): Promise<void>;
         stop(): Promise<void>;
         quit(): Promise<void>;
-        // Add other methods as needed
+        seek(seconds: number): Promise<void>;
+        volume(level: number): Promise<void>;
+        adjustVolume(delta: number): Promise<void>;
+        on(event: string, callback: any): void;
+        getProperty(property: string): Promise<any>;
+        observeProperty(property: string): void;
     }
 
     export = NodeMpv;

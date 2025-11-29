@@ -12,6 +12,10 @@ export interface VideoPlayerOptions {
 export interface IVideoPlayerService {
     play(url: string, options?: VideoPlayerOptions): Promise<void>;
     stop(): Promise<void>;
+    on(event: string, callback: (data: any) => void): void;
+    seek(seconds: number): Promise<void>;
+    togglePause(): Promise<void>;
+    adjustVolume(delta: number): Promise<void>;
 }
 
 export class VideoPlayerService implements IVideoPlayerService {
@@ -44,12 +48,16 @@ export class VideoPlayerService implements IVideoPlayerService {
                     this.mpv = new NodeMpv({
                         verbose: options?.debug || false,
                         debug: options?.debug || false,
+                        time_update: 1, // Update time every second
                     }, mpvArgs);
                 }
 
                 // Wait a bit to ensure MPV is ready to receive commands
                 // Increased to 2000ms to avoid ENOENT on Windows named pipes
                 await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Observe duration property to ensure we get updates
+                this.mpv?.observeProperty('duration');
 
                 await this.mpv.load(url);
                 // NodeMpv automatically plays after load usually, but ensure it.
@@ -71,6 +79,30 @@ export class VideoPlayerService implements IVideoPlayerService {
                 console.error('Failed to stop MPV:', error);
             }
             this.mpv = null;
+        }
+    }
+
+    on(event: string, callback: (data: any) => void): void {
+        if (this.mpv) {
+            this.mpv.on(event, callback);
+        }
+    }
+
+    async seek(seconds: number): Promise<void> {
+        if (this.mpv) {
+            await this.mpv.seek(seconds);
+        }
+    }
+
+    async togglePause(): Promise<void> {
+        if (this.mpv) {
+            await this.mpv.togglePause();
+        }
+    }
+
+    async adjustVolume(delta: number): Promise<void> {
+        if (this.mpv) {
+            await this.mpv.adjustVolume(delta);
         }
     }
 

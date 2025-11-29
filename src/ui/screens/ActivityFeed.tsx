@@ -8,6 +8,7 @@ import {
 } from '../../domain/interfaces.js';
 import { Activity, Creator } from '../../domain/models.js';
 import { VideoPlayerService } from '../../infrastructure/video-player-service.js';
+import { AudioPlayer } from '../components/AudioPlayer.js';
 
 interface ActivityFeedScreenProps {
   configRepo: IConfigRepository;
@@ -103,25 +104,34 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     value: activity.url,
   }));
 
+  if (isPlayingAudio && playerServiceRef.current) {
+    return (
+      <AudioPlayer
+        service={playerServiceRef.current}
+        onExit={() => {
+          playerServiceRef.current?.stop();
+          exit();
+        }}
+      />
+    );
+  }
+
+  if (isLaunching) {
+    return (
+      <Box padding={1}>
+        <Text color="green">
+          <Spinner type="dots" /> Launching player...
+        </Text>
+      </Box>
+    );
+  }
+
   return (
     <Box flexDirection="column" padding={1}>
       <Text bold underline>Recent Activities</Text>
       <Text dimColor>Select an activity to open in browser (or MPV if available):</Text>
       <Box marginTop={1}>
-        {isLaunching ? (
-          <Text color="green">
-            <Spinner type="dots" /> Launching player...
-          </Text>
-        ) : isPlayingAudio ? (
-          <Box flexDirection="column">
-            <Text color="green">
-              <Spinner type="dots" /> Playing audio...
-            </Text>
-            <Text>Press 'q' to stop and exit.</Text>
-          </Box>
-        ) : (
-          <SelectInput items={items} onSelect={handleSelect} />
-        )}
+        <SelectInput items={items} onSelect={handleSelect} />
       </Box>
     </Box>
   );
