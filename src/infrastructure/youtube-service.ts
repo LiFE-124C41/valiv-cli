@@ -1,6 +1,6 @@
 import Parser from 'rss-parser';
-import { Activity, Creator } from '../domain/models';
-import { IActivityService } from '../domain/interfaces';
+import { Activity, Creator } from '../domain/models.js';
+import { IActivityService } from '../domain/interfaces.js';
 
 export class YouTubeService implements IActivityService {
   private parser: Parser;
@@ -40,5 +40,19 @@ export class YouTubeService implements IActivityService {
     return results
       .flat()
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  async getChannelInfo(channelId: string): Promise<{ title: string } | null> {
+    try {
+      const feed = await this.parser.parseURL(
+        `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
+      );
+      return {
+        title: feed.title || '',
+      };
+    } catch (error) {
+      console.error(`Failed to fetch channel info for ${channelId}:`, error);
+      return null;
+    }
   }
 }

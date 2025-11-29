@@ -36,8 +36,16 @@ program
 program
   .command('list')
   .description('List registered creators')
-  .action(() => {
-    render(<App command="list" />);
+  .option('-d, --detail', 'Show detailed information')
+  .option('-i, --interactive', 'Enable interactive mode')
+  .action((options) => {
+    render(
+      <App
+        command="list"
+        detail={options.detail}
+        interactive={options.interactive}
+      />,
+    );
   });
 
 program

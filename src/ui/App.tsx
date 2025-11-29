@@ -15,29 +15,70 @@ interface AppProps {
   filterName?: string;
   audioOnly?: boolean;
   debug?: boolean;
+  detail?: boolean;
+  interactive?: boolean;
 }
 
-const App: React.FC<AppProps> = ({ command, filterName, audioOnly, debug }) => {
+type ScreenName = 'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule';
+
+const App: React.FC<AppProps> = ({
+  command,
+  filterName: initialFilterName,
+  audioOnly,
+  debug,
+  detail,
+  interactive,
+}) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
   const [youtubeService] = useState(() => new YouTubeService());
   const [calendarService] = useState(() => new CalendarService());
 
-  switch (command) {
+  // Navigation State
+  const [currentScreen, setCurrentScreen] = useState<ScreenName>(
+    command as ScreenName,
+  );
+  const [screenProps, setScreenProps] = useState<{ filterName?: string }>({
+    filterName: initialFilterName,
+  });
+
+  const navigate = (screen: ScreenName, props: { filterName?: string } = {}) => {
+    setCurrentScreen(screen);
+    setScreenProps(props);
+  };
+
+  switch (currentScreen) {
     case 'init':
-      return <WelcomeScreen configRepo={configRepo} />;
+      return (
+        <WelcomeScreen
+          configRepo={configRepo}
+          youtubeService={youtubeService}
+        />
+      );
     case 'add':
-      return <AddCreatorScreen configRepo={configRepo} />;
+      return (
+        <AddCreatorScreen
+          configRepo={configRepo}
+          youtubeService={youtubeService}
+        />
+      );
     case 'remove':
       return <RemoveCreator />;
     case 'list':
-      return <CreatorListScreen configRepo={configRepo} />;
+      return (
+        <CreatorListScreen
+          configRepo={configRepo}
+          detail={detail}
+          interactive={interactive}
+          onNavigate={navigate}
+        />
+      );
     case 'check':
       return (
         <ActivityFeedScreen
           configRepo={configRepo}
           youtubeService={youtubeService}
-          filterName={filterName}
+          filterName={screenProps.filterName}
           audioOnly={audioOnly}
           debug={debug}
         />
@@ -47,7 +88,7 @@ const App: React.FC<AppProps> = ({ command, filterName, audioOnly, debug }) => {
         <ScheduleListScreen
           configRepo={configRepo}
           calendarService={calendarService}
-          filterName={filterName}
+          filterName={screenProps.filterName}
         />
       );
     default:

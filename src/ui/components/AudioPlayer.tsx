@@ -38,9 +38,30 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit }) => 
     });
 
     useEffect(() => {
+        // Polling fallback
+        const interval = setInterval(async () => {
+            try {
+                const timePos = await service.getProperty('time-pos');
+                const dur = await service.getProperty('duration');
+
+                if (timePos !== null && timePos !== undefined) {
+                    setCurrentTime(Number(timePos));
+                }
+                if (dur !== null && dur !== undefined) {
+                    setDuration(Number(dur));
+                }
+            } catch (e) {
+                // Ignore errors during polling
+            }
+        }, 1000);
+
         service.on('statuschange', (status: any) => {
-            // MPV status updates can be complex, for now we rely on manual toggle state mostly
-            // but we can listen to 'pause' property if needed.
+            if (status.duration) {
+                setDuration(Number(status.duration));
+            }
+            if (status['time-pos']) {
+                setCurrentTime(Number(status['time-pos']));
+            }
         });
 
         service.on('timeposition', (seconds: number) => {
@@ -50,6 +71,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit }) => 
         service.on('duration', (seconds: number) => {
             setDuration(seconds);
         });
+
+        return () => clearInterval(interval);
     }, [service]);
 
     const formatTime = (seconds: number) => {

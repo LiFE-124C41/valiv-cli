@@ -16,6 +16,7 @@ export interface IVideoPlayerService {
     seek(seconds: number): Promise<void>;
     togglePause(): Promise<void>;
     adjustVolume(delta: number): Promise<void>;
+    getProperty(property: string): Promise<any>;
 }
 
 export class VideoPlayerService implements IVideoPlayerService {
@@ -58,6 +59,7 @@ export class VideoPlayerService implements IVideoPlayerService {
 
                 // Observe duration property to ensure we get updates
                 this.mpv?.observeProperty('duration');
+                this.mpv?.observeProperty('time-pos');
 
                 await this.mpv.load(url);
                 // NodeMpv automatically plays after load usually, but ensure it.
@@ -104,6 +106,13 @@ export class VideoPlayerService implements IVideoPlayerService {
         if (this.mpv) {
             await this.mpv.adjustVolume(delta);
         }
+    }
+
+    async getProperty(property: string): Promise<any> {
+        if (this.mpv) {
+            return await this.mpv.getProperty(property);
+        }
+        return null;
     }
 
     private async checkMpvAvailability(): Promise<boolean> {
