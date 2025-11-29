@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Text, Box } from 'ink';
-import { ConfigRepository } from '../infrastructure/config-repository';
-import { YouTubeService } from '../infrastructure/youtube-service';
-import { CalendarService } from '../infrastructure/calendar-service';
-import WelcomeScreen from './screens/Welcome';
-import CreatorListScreen from './screens/CreatorList';
-import ActivityFeedScreen from './screens/ActivityFeed';
-import ScheduleListScreen from './screens/ScheduleList';
-import AddCreatorScreen from './screens/AddCreator';
+import { ConfigRepository } from '../infrastructure/config-repository.js';
+import { YouTubeService } from '../infrastructure/youtube-service.js';
+import { CalendarService } from '../infrastructure/calendar-service.js';
+import WelcomeScreen from './screens/Welcome.js';
+import CreatorListScreen from './screens/CreatorList.js';
+import ActivityFeedScreen from './screens/ActivityFeed.js';
+import ScheduleListScreen from './screens/ScheduleList.js';
+import AddCreatorScreen from './screens/AddCreator.js';
+import RemoveCreator from './RemoveCreator.js';
 
 interface AppProps {
     command: string;
@@ -25,6 +26,8 @@ const App: React.FC<AppProps> = ({ command, filterName }) => {
             return <WelcomeScreen configRepo={configRepo} />;
         case 'add':
             return <AddCreatorScreen configRepo={configRepo} />;
+        case 'remove':
+            return <RemoveCreator />;
         case 'list':
             return <CreatorListScreen configRepo={configRepo} />;
         case 'check':

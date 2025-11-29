@@ -2,7 +2,7 @@
 import React from 'react';
 import { render } from 'ink';
 import { Command } from 'commander';
-import App from './ui/App';
+import App from './ui/App.js';
 
 const program = new Command();
 
@@ -23,6 +23,14 @@ program
     .description('Add a new creator')
     .action(() => {
         render(<App command="add" />);
+    });
+
+program
+    .command('remove')
+    .alias('rm')
+    .description('Remove a creator')
+    .action(() => {
+        render(<App command="remove" />);
     });
 
 program
