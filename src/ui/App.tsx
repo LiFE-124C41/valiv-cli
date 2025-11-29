@@ -13,9 +13,11 @@ import RemoveCreator from './RemoveCreator.js';
 interface AppProps {
   command: string;
   filterName?: string;
+  audioOnly?: boolean;
+  debug?: boolean;
 }
 
-const App: React.FC<AppProps> = ({ command, filterName }) => {
+const App: React.FC<AppProps> = ({ command, filterName, audioOnly, debug }) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
   const [youtubeService] = useState(() => new YouTubeService());
@@ -36,6 +38,8 @@ const App: React.FC<AppProps> = ({ command, filterName }) => {
           configRepo={configRepo}
           youtubeService={youtubeService}
           filterName={filterName}
+          audioOnly={audioOnly}
+          debug={debug}
         />
       );
     case 'schedule':

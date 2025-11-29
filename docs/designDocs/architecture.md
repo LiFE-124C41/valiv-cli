@@ -32,6 +32,7 @@ src/
 ├── infrastructure/   # インフラストラクチャ層: 外部との通信、詳細実装
 │   ├── youtube-service.ts  # YouTube RSS処理
 │   ├── calendar-service.ts # Google Calendar iCal処理
+│   ├── video-player-service.ts # 動画再生 (MPV/Browser)
 │   └── config-repository.ts # 設定ファイル読み書き
 ├── ui/               # プレゼンテーション層 (UI): Inkコンポーネント
 │   ├── App.tsx       # メインコンポーネント
@@ -49,6 +50,7 @@ src/
 - **HTTPクライアント**: axios または fetch
 - **RSSパース**: rss-parser
 - **カレンダー処理**: node-ical
+- **動画再生**: node-mpv (MPV連携)
 - **テスト**: Vitest
 
 ## 設計原則

@@ -44,8 +44,17 @@ program
   .command('check')
   .description('Check recent activities')
   .argument('[name]', 'Filter by creator name')
-  .action((name) => {
-    render(<App command="check" filterName={name} />);
+  .option('-a, --audio-only', 'Play audio only (MPV)')
+  .option('-d, --debug', 'Enable debug logging to file')
+  .action((name, options) => {
+    render(
+      <App
+        command="check"
+        filterName={name}
+        audioOnly={options.audioOnly}
+        debug={options.debug}
+      />,
+    );
   });
 
 program

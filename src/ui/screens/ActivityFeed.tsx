@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Text, Box } from 'ink';
+import React, { useEffect, useState, useRef } from 'react';
+import { Text, Box, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import SelectInput from 'ink-select-input';
 import {
@@ -7,20 +7,39 @@ import {
   IActivityService,
 } from '../../domain/interfaces.js';
 import { Activity, Creator } from '../../domain/models.js';
+import { VideoPlayerService } from '../../infrastructure/video-player-service.js';
 
 interface ActivityFeedScreenProps {
   configRepo: IConfigRepository;
   youtubeService: IActivityService;
   filterName?: string;
+  audioOnly?: boolean;
+  debug?: boolean;
 }
 
 const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   configRepo,
   youtubeService,
   filterName,
+  audioOnly,
+  debug,
 }) => {
+  const { exit } = useApp();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const playerServiceRef = useRef<VideoPlayerService | null>(null);
+
+  useInput((input) => {
+    if (isPlayingAudio && input === 'q') {
+      if (playerServiceRef.current) {
+        playerServiceRef.current.stop();
+      }
+      exit();
+      setTimeout(() => process.exit(0), 100);
+    }
+  });
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -39,18 +58,26 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     fetchActivities();
   }, [configRepo, youtubeService, filterName]);
 
-  const handleSelect = (item: { value: string }) => {
+  const handleSelect = async (item: { value: string }) => {
+    setIsLaunching(true);
     const url = item.value;
-    const command =
-      process.platform === 'win32' ? `start "" "${url}"` : `open "${url}"`;
+    playerServiceRef.current = new VideoPlayerService();
 
-    import('child_process').then(({ exec }) => {
-      exec(command, (error) => {
-        if (error) {
-          // console.error(`Failed to open URL: ${error.message}`);
-        }
-      });
-    });
+    try {
+      await playerServiceRef.current.play(url, { audioOnly, debug });
+      if (audioOnly) {
+        setIsPlayingAudio(true);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLaunching(false);
+      if (!audioOnly) {
+        exit();
+        // Force exit to ensure terminal return even if detached processes exist
+        setTimeout(() => process.exit(0), 100);
+      }
+    }
   };
 
   if (loading) {
@@ -78,12 +105,23 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Text bold underline>
-        Recent Activities
-      </Text>
-      <Text dimColor>Select an activity to open in browser:</Text>
+      <Text bold underline>Recent Activities</Text>
+      <Text dimColor>Select an activity to open in browser (or MPV if available):</Text>
       <Box marginTop={1}>
-        <SelectInput items={items} onSelect={handleSelect} />
+        {isLaunching ? (
+          <Text color="green">
+            <Spinner type="dots" /> Launching player...
+          </Text>
+        ) : isPlayingAudio ? (
+          <Box flexDirection="column">
+            <Text color="green">
+              <Spinner type="dots" /> Playing audio...
+            </Text>
+            <Text>Press 'q' to stop and exit.</Text>
+          </Box>
+        ) : (
+          <SelectInput items={items} onSelect={handleSelect} />
+        )}
       </Box>
     </Box>
   );
