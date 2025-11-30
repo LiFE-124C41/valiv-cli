@@ -9,7 +9,7 @@ const program = new Command();
 program
   .name('valiv')
   .description('CLI tool for tracking vα-liv activities')
-  .version('1.0.0');
+  .version('1.0.0', '-v, --version');
 
 program
   .command('init')
