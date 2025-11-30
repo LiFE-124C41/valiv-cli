@@ -9,6 +9,7 @@ import {
 import { Activity, Creator } from '../../domain/models.js';
 import { VideoPlayerService } from '../../infrastructure/video-player-service.js';
 import { AudioPlayer } from '../components/AudioPlayer.js';
+import { filterCreators } from '../../utils/filter.js';
 
 interface ActivityFeedScreenProps {
   configRepo: IConfigRepository;
@@ -45,11 +46,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   useEffect(() => {
     const fetchActivities = async () => {
       let creators = configRepo.getCreators();
-      if (filterName) {
-        creators = creators.filter((c: Creator) =>
-          c.name.toLowerCase().includes(filterName.toLowerCase()),
-        );
-      }
+      creators = filterCreators(creators, filterName);
 
       const results = await youtubeService.getActivities(creators);
       setActivities(results);

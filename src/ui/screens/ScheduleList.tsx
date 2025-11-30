@@ -7,6 +7,7 @@ import {
   IScheduleService,
 } from '../../domain/interfaces.js';
 import { ScheduleEvent, Creator } from '../../domain/models.js';
+import { filterCreators } from '../../utils/filter.js';
 
 interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
@@ -25,11 +26,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   useEffect(() => {
     const fetchSchedules = async () => {
       let creators = configRepo.getCreators();
-      if (filterName) {
-        creators = creators.filter((c: Creator) =>
-          c.name.toLowerCase().includes(filterName.toLowerCase()),
-        );
-      }
+      creators = filterCreators(creators, filterName);
 
       const results = await calendarService.getSchedules(creators);
       setEvents(results);
