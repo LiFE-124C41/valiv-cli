@@ -31,7 +31,10 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const [loading, setLoading] = useState(true);
   const [isLaunching, setIsLaunching] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [page, setPage] = useState(1);
   const playerServiceRef = useRef<VideoPlayerService | null>(null);
+
+  const ITEMS_PER_PAGE = 10;
 
   useInput((input) => {
     if (isPlayingAudio && input === 'q') {
@@ -57,6 +60,15 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   }, [configRepo, youtubeService, filterId]);
 
   const handleSelect = async (item: { value: string }) => {
+    if (item.value === 'next_page') {
+      setPage((p) => p + 1);
+      return;
+    }
+    if (item.value === 'prev_page') {
+      setPage((p) => p - 1);
+      return;
+    }
+
     setIsLaunching(true);
     const url = item.value;
     playerServiceRef.current = new VideoPlayerService();
@@ -96,10 +108,28 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     );
   }
 
-  const items = activities.map((activity) => ({
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedActivities = activities.slice(startIndex, endIndex);
+
+  const items = paginatedActivities.map((activity) => ({
     label: `[${activity.author?.name}] ${activity.title} (${activity.timestamp.toLocaleDateString()})`,
     value: activity.url,
   }));
+
+  if (endIndex < activities.length) {
+    items.push({
+      label: 'Next Page >>',
+      value: 'next_page',
+    });
+  }
+
+  if (page > 1) {
+    items.push({
+      label: '<< Previous Page',
+      value: 'prev_page',
+    });
+  }
 
   if (isPlayingAudio && playerServiceRef.current) {
     return (
@@ -125,7 +155,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Text bold underline>Recent Activities</Text>
+      <Text bold underline>Recent Activities (Page {page})</Text>
       <Text dimColor>Select an activity to open in browser (or MPV if available):</Text>
       <Box marginTop={1}>
         <SelectInput items={items} onSelect={handleSelect} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, Box } from 'ink';
+import { Text, Box, useInput, useApp } from 'ink';
 import Spinner from 'ink-spinner';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -20,8 +20,32 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   calendarService,
   filterId,
 }) => {
+  const { exit } = useApp();
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
+
+  useInput((input, key) => {
+    if (input === 'q' || key.escape) {
+      exit();
+      setTimeout(() => process.exit(0), 100);
+    }
+
+    if (key.rightArrow) {
+      const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
+      if (page < totalPages) {
+        setPage((p) => p + 1);
+      }
+    }
+
+    if (key.leftArrow) {
+      if (page > 1) {
+        setPage((p) => p - 1);
+      }
+    }
+  });
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -54,8 +78,13 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
     );
   }
 
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedEvents = events.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
+
   // Group events by date
-  const groupedEvents = events.reduce(
+  const groupedEvents = paginatedEvents.reduce(
     (acc, event) => {
       const dateKey = event.startTime.toLocaleDateString();
       if (!acc[dateKey]) {
@@ -70,7 +99,10 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   return (
     <Box flexDirection="column" padding={1}>
       <Text bold underline>
-        Upcoming Schedules
+        Upcoming Schedules (Page {page}/{totalPages})
+      </Text>
+      <Text dimColor>
+        Use Left/Right arrows to navigate, 'q' to exit.
       </Text>
       {Object.entries(groupedEvents).map(
         ([date, dateEvents]: [string, ScheduleEvent[]]) => (
