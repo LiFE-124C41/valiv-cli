@@ -4,12 +4,17 @@ import { render } from 'ink';
 import { Command } from 'commander';
 import App from './ui/App.js';
 
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+
 const program = new Command();
 
 program
   .name('valiv')
   .description('CLI tool for tracking vα-liv activities')
-  .version('1.0.0', '-v, --version');
+  .version(pkg.version, '-v, --version');
 
 program
   .command('init')
