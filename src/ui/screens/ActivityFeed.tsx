@@ -14,7 +14,7 @@ import { filterCreators } from '../../utils/filter.js';
 interface ActivityFeedScreenProps {
   configRepo: IConfigRepository;
   youtubeService: IActivityService;
-  filterName?: string;
+  filterId?: string;
   audioOnly?: boolean;
   debug?: boolean;
 }
@@ -22,7 +22,7 @@ interface ActivityFeedScreenProps {
 const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   configRepo,
   youtubeService,
-  filterName,
+  filterId,
   audioOnly,
   debug,
 }) => {
@@ -46,7 +46,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   useEffect(() => {
     const fetchActivities = async () => {
       let creators = configRepo.getCreators();
-      creators = filterCreators(creators, filterName);
+      creators = filterCreators(creators, filterId);
 
       const results = await youtubeService.getActivities(creators);
       setActivities(results);
@@ -54,7 +54,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     };
 
     fetchActivities();
-  }, [configRepo, youtubeService, filterName]);
+  }, [configRepo, youtubeService, filterId]);
 
   const handleSelect = async (item: { value: string }) => {
     setIsLaunching(true);

@@ -9,7 +9,7 @@ interface CreatorListScreenProps {
   configRepo: IConfigRepository;
   detail?: boolean;
   interactive?: boolean;
-  onNavigate?: (screen: 'check', props: { filterName?: string }) => void;
+  onNavigate?: (screen: 'check', props: { filterId?: string }) => void;
 }
 
 type ViewState = 'list' | 'actions';
@@ -59,7 +59,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
     switch (item.value) {
       case 'check':
         if (onNavigate) {
-          onNavigate('check', { filterName: selectedCreator.name });
+          onNavigate('check', { filterId: selectedCreator.name });
         } else {
           console.log('Navigation not available');
         }

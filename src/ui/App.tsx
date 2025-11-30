@@ -12,7 +12,7 @@ import RemoveCreator from './RemoveCreator.js';
 
 interface AppProps {
   command: string;
-  filterName?: string;
+  filterId?: string;
   audioOnly?: boolean;
   debug?: boolean;
   detail?: boolean;
@@ -23,7 +23,7 @@ type ScreenName = 'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule';
 
 const App: React.FC<AppProps> = ({
   command,
-  filterName: initialFilterName,
+  filterId: initialFilterId,
   audioOnly,
   debug,
   detail,
@@ -38,11 +38,11 @@ const App: React.FC<AppProps> = ({
   const [currentScreen, setCurrentScreen] = useState<ScreenName>(
     command as ScreenName,
   );
-  const [screenProps, setScreenProps] = useState<{ filterName?: string }>({
-    filterName: initialFilterName,
+  const [screenProps, setScreenProps] = useState<{ filterId?: string }>({
+    filterId: initialFilterId,
   });
 
-  const navigate = (screen: ScreenName, props: { filterName?: string } = {}) => {
+  const navigate = (screen: ScreenName, props: { filterId?: string } = {}) => {
     setCurrentScreen(screen);
     setScreenProps(props);
   };
@@ -78,7 +78,7 @@ const App: React.FC<AppProps> = ({
         <ActivityFeedScreen
           configRepo={configRepo}
           youtubeService={youtubeService}
-          filterName={screenProps.filterName}
+          filterId={screenProps.filterId}
           audioOnly={audioOnly}
           debug={debug}
         />
@@ -88,7 +88,7 @@ const App: React.FC<AppProps> = ({
         <ScheduleListScreen
           configRepo={configRepo}
           calendarService={calendarService}
-          filterName={screenProps.filterName}
+          filterId={screenProps.filterId}
         />
       );
     default:

@@ -12,13 +12,13 @@ import { filterCreators } from '../../utils/filter.js';
 interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
   calendarService: IScheduleService;
-  filterName?: string;
+  filterId?: string;
 }
 
 const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   configRepo,
   calendarService,
-  filterName,
+  filterId,
 }) => {
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   useEffect(() => {
     const fetchSchedules = async () => {
       let creators = configRepo.getCreators();
-      creators = filterCreators(creators, filterName);
+      creators = filterCreators(creators, filterId);
 
       const results = await calendarService.getSchedules(creators);
       setEvents(results);
@@ -34,7 +34,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
     };
 
     fetchSchedules();
-  }, [configRepo, calendarService, filterName]);
+  }, [configRepo, calendarService, filterId]);
 
   if (loading) {
     return (

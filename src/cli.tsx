@@ -51,14 +51,14 @@ program
 program
   .command('check')
   .description('Check recent activities')
-  .argument('[name]', 'Filter by creator name')
+  .argument('[id]', 'Filter by creator ID or name')
   .option('-a, --audio-only', 'Play audio only (MPV)')
   .option('-d, --debug', 'Enable debug logging to file')
-  .action((name, options) => {
+  .action((id, options) => {
     render(
       <App
         command="check"
-        filterName={name}
+        filterId={id}
         audioOnly={options.audioOnly}
         debug={options.debug}
       />,
@@ -68,9 +68,9 @@ program
 program
   .command('schedule')
   .description('Check upcoming schedules')
-  .argument('[name]', 'Filter by creator name')
-  .action((name) => {
-    render(<App command="schedule" filterName={name} />);
+  .argument('[id]', 'Filter by creator ID or name')
+  .action((id) => {
+    render(<App command="schedule" filterId={id} />);
   });
 
 program.parse(process.argv);
