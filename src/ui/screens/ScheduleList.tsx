@@ -8,6 +8,7 @@ import {
 } from '../../domain/interfaces.js';
 import { ScheduleEvent, Creator } from '../../domain/models.js';
 import { filterCreators } from '../../utils/filter.js';
+import { stripHtml } from '../../utils/stringUtils.js';
 
 interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
@@ -147,9 +148,16 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
                 {event.description && (
                   <Box marginTop={0}>
                     <Text dimColor>
-                      {event.description.length > 100
-                        ? event.description.substring(0, 100) + '...'
-                        : event.description}
+                      {stripHtml(event.description).length > 100
+                        ? stripHtml(event.description).substring(0, 100) + '...'
+                        : stripHtml(event.description)}
+                    </Text>
+                  </Box>
+                )}
+                {event.url && (
+                  <Box marginTop={0}>
+                    <Text color="blue" underline>
+                      {event.url}
                     </Text>
                   </Box>
                 )}
