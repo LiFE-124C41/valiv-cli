@@ -148,7 +148,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
           creators.map((creator) => (
             <Box key={creator.id} flexDirection="column" marginBottom={1}>
               <Text bold color={disableColor ? 'green' : (creator.color || 'green')}>
-                {creator.name}
+                {creator.symbol ? `${creator.symbol} ` : ''}{creator.name}
               </Text>
               <Box marginLeft={2} flexDirection="column">
                 <Text>ID: {creator.id}</Text>
@@ -168,7 +168,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
           creators.map((creator) => (
             <Box key={creator.id}>
               <Text bold color={disableColor ? 'green' : (creator.color || 'green')}>
-                {creator.name}
+                {creator.symbol ? `${creator.symbol} ` : ''}{creator.name}
               </Text>
               <Text> - </Text>
               <Text dimColor>

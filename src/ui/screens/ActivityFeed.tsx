@@ -35,6 +35,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [currentTitle, setCurrentTitle] = useState<string>('');
   const [currentColor, setCurrentColor] = useState<string | undefined>(undefined);
+  const [currentSymbol, setCurrentSymbol] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const playerServiceRef = useRef<VideoPlayerService | null>(null);
 
@@ -80,6 +81,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     if (selectedActivity) {
       setCurrentTitle(selectedActivity.title);
       setCurrentColor(selectedActivity.author?.color);
+      setCurrentSymbol(selectedActivity.author?.symbol);
     }
 
     playerServiceRef.current = new VideoPlayerService();
@@ -148,6 +150,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         service={playerServiceRef.current}
         title={currentTitle}
         color={disableColor ? undefined : currentColor}
+        symbol={currentSymbol}
         onExit={() => {
           playerServiceRef.current?.stop();
           exit();
@@ -184,10 +187,11 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     const match = label.match(/^\[(.*?)\] (.*)$/);
     if (match) {
       const [, authorName, content] = match;
+      const symbol = activity?.author?.symbol ? `${activity.author.symbol} ` : '';
       return (
         <Text>
           <Text color="blue">{isSelected ? '> ' : '  '}</Text>
-          <Text color={authorColor}>[{authorName}] </Text>
+          <Text color={authorColor}>[{symbol}{authorName}] </Text>
           <Text color={isSelected ? 'blue' : undefined}>{content}</Text>
         </Text>
       );

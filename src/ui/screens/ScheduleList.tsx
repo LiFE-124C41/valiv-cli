@@ -125,7 +125,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
               >
                 <Box>
                   <Text bold color="yellow">
-                    {event.title}
+                    {event.author?.symbol ? `${event.author.symbol} ` : ''}{event.title}
                   </Text>
                 </Box>
                 <Box>

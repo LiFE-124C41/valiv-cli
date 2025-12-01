@@ -7,9 +7,10 @@ interface AudioPlayerProps {
     onExit: () => void;
     title?: string;
     color?: string;
+    symbol?: string;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title, color }) => {
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title, color, symbol }) => {
     const [status, setStatus] = useState<'playing' | 'paused'>('playing');
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -94,7 +95,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title
 
     return (
         <Box flexDirection="column" borderStyle="round" borderColor={color || 'cyan'} padding={1}>
-            <Text bold color={color || 'green'}>Audio Player</Text>
+            <Text bold color={color || 'green'}>{symbol ? `${symbol} ` : ''}Audio Player</Text>
             {title && (
                 <Box marginTop={1}>
                     <Text bold>{title}</Text>

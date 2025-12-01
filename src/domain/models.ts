@@ -8,6 +8,8 @@ export interface Creator {
   name: string;
   /** テーマカラー (HEX) */
   color?: string;
+  /** シンボル (Emoji) */
+  symbol?: string;
   /** YouTubeチャンネルID (例: UC...) */
   youtubeChannelId?: string;
   /** TwitchチャンネルID */
