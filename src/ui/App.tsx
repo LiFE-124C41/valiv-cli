@@ -17,6 +17,7 @@ interface AppProps {
   debug?: boolean;
   detail?: boolean;
   interactive?: boolean;
+  disableColor?: boolean;
 }
 
 type ScreenName = 'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule';
@@ -28,6 +29,7 @@ const App: React.FC<AppProps> = ({
   debug,
   detail,
   interactive,
+  disableColor,
 }) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
@@ -71,6 +73,7 @@ const App: React.FC<AppProps> = ({
           detail={detail}
           interactive={interactive}
           onNavigate={navigate}
+          disableColor={disableColor}
         />
       );
     case 'check':
@@ -81,6 +84,7 @@ const App: React.FC<AppProps> = ({
           filterId={screenProps.filterId}
           audioOnly={audioOnly}
           debug={debug}
+          disableColor={disableColor}
         />
       );
     case 'schedule':
@@ -89,6 +93,7 @@ const App: React.FC<AppProps> = ({
           configRepo={configRepo}
           calendarService={calendarService}
           filterId={screenProps.filterId}
+          disableColor={disableColor}
         />
       );
     default:

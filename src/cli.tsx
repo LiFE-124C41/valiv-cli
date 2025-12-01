@@ -43,12 +43,14 @@ program
   .description('List registered creators')
   .option('-d, --detail', 'Show detailed information')
   .option('-i, --interactive', 'Enable interactive mode')
+  .option('--no-color-creator', 'Disable creator colors')
   .action((options) => {
     render(
       <App
         command="list"
         detail={options.detail}
         interactive={options.interactive}
+        disableColor={!options.colorCreator}
       />,
     );
   });
@@ -59,6 +61,7 @@ program
   .argument('[id]', 'Filter by creator ID or name')
   .option('-a, --audio-only', 'Play audio only (MPV)')
   .option('-d, --debug', 'Enable debug logging to file')
+  .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
       <App
@@ -66,6 +69,7 @@ program
         filterId={id}
         audioOnly={options.audioOnly}
         debug={options.debug}
+        disableColor={!options.colorCreator}
       />,
     );
   });
@@ -74,8 +78,15 @@ program
   .command('schedule')
   .description('Check upcoming schedules')
   .argument('[id]', 'Filter by creator ID or name')
-  .action((id) => {
-    render(<App command="schedule" filterId={id} />);
+  .option('--no-color-creator', 'Disable creator colors')
+  .action((id, options) => {
+    render(
+      <App
+        command="schedule"
+        filterId={id}
+        disableColor={!options.colorCreator}
+      />,
+    );
   });
 
 program.parse(process.argv);

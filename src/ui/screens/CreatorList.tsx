@@ -10,6 +10,7 @@ interface CreatorListScreenProps {
   detail?: boolean;
   interactive?: boolean;
   onNavigate?: (screen: 'check', props: { filterId?: string }) => void;
+  disableColor?: boolean;
 }
 
 type ViewState = 'list' | 'actions';
@@ -19,6 +20,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   detail,
   interactive,
   onNavigate,
+  disableColor,
 }) => {
   const { exit } = useApp();
   const [creators, setCreators] = useState<Creator[]>([]);
@@ -145,7 +147,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
           // Detailed View
           creators.map((creator) => (
             <Box key={creator.id} flexDirection="column" marginBottom={1}>
-              <Text bold color="green">
+              <Text bold color={disableColor ? 'green' : (creator.color || 'green')}>
                 {creator.name}
               </Text>
               <Box marginLeft={2} flexDirection="column">
@@ -165,7 +167,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
           // Simple View
           creators.map((creator) => (
             <Box key={creator.id}>
-              <Text bold color="green">
+              <Text bold color={disableColor ? 'green' : (creator.color || 'green')}>
                 {creator.name}
               </Text>
               <Text> - </Text>

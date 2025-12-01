@@ -24,6 +24,7 @@ export class CalendarService implements IScheduleService {
                 url: event.url,
                 description: event.description,
                 platform: 'calendar' as const,
+                author: creator,
               }))
               .filter((event) => event.startTime >= now)
           ); // Future events only

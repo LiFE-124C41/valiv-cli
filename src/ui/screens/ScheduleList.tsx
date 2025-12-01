@@ -14,12 +14,14 @@ interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
   calendarService: IScheduleService;
   filterId?: string;
+  disableColor?: boolean;
 }
 
 const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   configRepo,
   calendarService,
   filterId,
+  disableColor,
 }) => {
   const { exit } = useApp();
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
@@ -118,7 +120,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
                 marginLeft={2}
                 marginBottom={1}
                 borderStyle="round"
-                borderColor="gray"
+                borderColor={disableColor ? 'gray' : (event.author?.color || 'gray')}
                 paddingX={1}
               >
                 <Box>

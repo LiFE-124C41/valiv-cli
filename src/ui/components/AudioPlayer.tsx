@@ -6,9 +6,10 @@ interface AudioPlayerProps {
     service: IVideoPlayerService;
     onExit: () => void;
     title?: string;
+    color?: string;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title }) => {
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title, color }) => {
     const [status, setStatus] = useState<'playing' | 'paused'>('playing');
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -92,8 +93,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title
     const progressBar = '█'.repeat(filledWidth) + '░'.repeat(barWidth - filledWidth);
 
     return (
-        <Box flexDirection="column" borderStyle="round" borderColor="cyan" padding={1}>
-            <Text bold color="green">Audio Player</Text>
+        <Box flexDirection="column" borderStyle="round" borderColor={color || 'cyan'} padding={1}>
+            <Text bold color={color || 'green'}>Audio Player</Text>
             {title && (
                 <Box marginTop={1}>
                     <Text bold>{title}</Text>
@@ -106,7 +107,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title
                 <Text>  Vol: {volume}%</Text>
             </Box>
             <Box>
-                <Text color="cyan">{progressBar}</Text>
+                <Text color={color || 'cyan'}>{progressBar}</Text>
                 <Text> {formatTime(currentTime)} / {formatTime(duration)}</Text>
             </Box>
             <Box marginTop={1}>

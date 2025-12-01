@@ -6,6 +6,8 @@ export interface Creator {
   id: string;
   /** 表示名 */
   name: string;
+  /** テーマカラー (HEX) */
+  color?: string;
   /** YouTubeチャンネルID (例: UC...) */
   youtubeChannelId?: string;
   /** TwitchチャンネルID */
@@ -52,4 +54,6 @@ export interface ScheduleEvent {
   description?: string;
   /** プラットフォーム (デフォルト: calendar) */
   platform: Platform;
+  /** イベントの作成者 */
+  author?: Creator;
 }

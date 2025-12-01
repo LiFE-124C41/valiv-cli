@@ -4,6 +4,7 @@ export const VALIV_MEMBERS: Creator[] = [
   {
     id: 'manaka_tomori',
     name: 'Manaka Tomori',
+    color: '#FF4554',
     youtubeChannelId: 'UCuWoH9mx0EgT69UyVxaw1NQ',
     xUsername: 'TomoriManaka',
     calendarUrl:
@@ -12,6 +13,7 @@ export const VALIV_MEMBERS: Creator[] = [
   {
     id: 'cosmo_kamizuru',
     name: 'Cosmo Kamizuru',
+    color: '#56CCF2',
     youtubeChannelId: 'UCU8VGKDhiSHLerg4wYXjhtw',
     xUsername: 'KamizuruCosmo',
     calendarUrl:
@@ -20,6 +22,7 @@ export const VALIV_MEMBERS: Creator[] = [
   {
     id: 'sara_letora_oliveira_utagawa',
     name: 'Sara Letora Oliveira Utagawa',
+    color: '#D7F930',
     youtubeChannelId: 'UCBpLt5oWnDnG1ni5f33gcEQ',
     twitchChannelId: 'utagawaletora',
     xUsername: 'UtagawaLetora',
@@ -29,6 +32,7 @@ export const VALIV_MEMBERS: Creator[] = [
   {
     id: 'valiv_official',
     name: 'va-liv official',
+    color: '#656A75',
     youtubeChannelId: 'UC7r2U8wAxsXHCMz9XlMWo4w',
     xUsername: 'valiv_official',
     calendarUrl:

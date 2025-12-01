@@ -17,6 +17,7 @@ interface ActivityFeedScreenProps {
   filterId?: string;
   audioOnly?: boolean;
   debug?: boolean;
+  disableColor?: boolean;
 }
 
 const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
@@ -25,6 +26,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   filterId,
   audioOnly,
   debug,
+  disableColor,
 }) => {
   const { exit } = useApp();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -32,6 +34,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const [isLaunching, setIsLaunching] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [currentTitle, setCurrentTitle] = useState<string>('');
+  const [currentColor, setCurrentColor] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const playerServiceRef = useRef<VideoPlayerService | null>(null);
 
@@ -76,6 +79,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     const selectedActivity = activities.find(a => a.url === url);
     if (selectedActivity) {
       setCurrentTitle(selectedActivity.title);
+      setCurrentColor(selectedActivity.author?.color);
     }
 
     playerServiceRef.current = new VideoPlayerService();
@@ -143,6 +147,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       <AudioPlayer
         service={playerServiceRef.current}
         title={currentTitle}
+        color={disableColor ? undefined : currentColor}
         onExit={() => {
           playerServiceRef.current?.stop();
           exit();
@@ -161,12 +166,47 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ItemComponent: React.FC<any> = ({ isSelected, label, value }) => {
+    if (value === 'next_page' || value === 'prev_page') {
+      return (
+        <Text color={isSelected ? 'blue' : undefined}>
+          {isSelected ? '> ' : '  '}
+          {label}
+        </Text>
+      );
+    }
+
+    const activity = activities.find((a) => a.url === value);
+    const authorColor = disableColor ? 'green' : (activity?.author?.color || 'green');
+
+    // Reconstruct label parts
+    const match = label.match(/^\[(.*?)\] (.*)$/);
+    if (match) {
+      const [, authorName, content] = match;
+      return (
+        <Text>
+          <Text color="blue">{isSelected ? '> ' : '  '}</Text>
+          <Text color={authorColor}>[{authorName}] </Text>
+          <Text color={isSelected ? 'blue' : undefined}>{content}</Text>
+        </Text>
+      );
+    }
+
+    return (
+      <Text color={isSelected ? 'blue' : undefined}>
+        {isSelected ? '> ' : '  '}
+        {label}
+      </Text>
+    );
+  };
+
   return (
     <Box flexDirection="column" padding={1}>
       <Text bold underline>Recent Activities (Page {page})</Text>
       <Text dimColor>Select an activity to open in browser (or MPV if available):</Text>
       <Box marginTop={1}>
-        <SelectInput items={items} onSelect={handleSelect} />
+        <SelectInput items={items} onSelect={handleSelect} itemComponent={ItemComponent} />
       </Box>
     </Box>
   );
