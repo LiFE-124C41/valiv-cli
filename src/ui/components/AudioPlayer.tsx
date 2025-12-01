@@ -5,9 +5,10 @@ import { IVideoPlayerService } from '../../infrastructure/video-player-service.j
 interface AudioPlayerProps {
     service: IVideoPlayerService;
     onExit: () => void;
+    title?: string;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit }) => {
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title }) => {
     const [status, setStatus] = useState<'playing' | 'paused'>('playing');
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -93,6 +94,11 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit }) => 
     return (
         <Box flexDirection="column" borderStyle="round" borderColor="cyan" padding={1}>
             <Text bold color="green">Audio Player</Text>
+            {title && (
+                <Box marginTop={1}>
+                    <Text bold>{title}</Text>
+                </Box>
+            )}
             <Box marginY={1}>
                 <Text color={status === 'playing' ? 'green' : 'yellow'}>
                     {status === 'playing' ? '▶ Playing' : '⏸ Paused'}

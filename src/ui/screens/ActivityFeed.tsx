@@ -31,6 +31,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const [loading, setLoading] = useState(true);
   const [isLaunching, setIsLaunching] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [currentTitle, setCurrentTitle] = useState<string>('');
   const [page, setPage] = useState(1);
   const playerServiceRef = useRef<VideoPlayerService | null>(null);
 
@@ -71,6 +72,12 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
 
     setIsLaunching(true);
     const url = item.value;
+
+    const selectedActivity = activities.find(a => a.url === url);
+    if (selectedActivity) {
+      setCurrentTitle(selectedActivity.title);
+    }
+
     playerServiceRef.current = new VideoPlayerService();
 
     try {
@@ -135,6 +142,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     return (
       <AudioPlayer
         service={playerServiceRef.current}
+        title={currentTitle}
         onExit={() => {
           playerServiceRef.current?.stop();
           exit();
