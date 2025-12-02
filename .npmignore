@@ -1,0 +1,9 @@
+src/
+docs/
+.agent/
+.github/
+.vscode/
+.eslintrc.cjs
+.prettierrc
+tsconfig.json
+*.log
