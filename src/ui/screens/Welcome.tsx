@@ -6,6 +6,12 @@ import { VALIV_MEMBERS } from '../../domain/constants.js';
 import { YouTubeService } from '../../infrastructure/youtube-service.js';
 import { Creator } from '../../domain/models.js';
 
+const getWelcomeMessage = () => {
+  const art =
+    'CiByJG9JICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogIHQkIyEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgfEBXQ0ohIGBsbGxsbGxsbGwhSmRkZHpsbCFDZGRkZGRwXWxsbDFkZGRxK2xsbGxsbCFKZGRkemxsbGxsbF4gICAgICAgIGlfICAsWUNDQ34gICAgICAgICAgIC4vQ0NDai4gCiAgICAxQCQkVz4gICAgICd9MTEpbSQkJHdeICdDJCQkJCQkJE1pIF84JCRCXSAgICAgICAgLGskQHc/ICAgICAgICAgICAgIDwmQl0gID8lJCQlLSAgICAgICAgIC51JCQkaDogIAogICAgIH1CJCQmfiAgICAgICAnTCQkJFpgICdRJCQkd3V6QCQkJnUlJCQ4LSAgIjo6Ojo6LiAiZCQmJmIxe3t7bCAgICAgICdvJCQ4LCAgKzgkJEJdICAgICAgIC5jJCQkZCIgICAKICAgICAgPyUkJDhfICAgICBgTyQkJDAnIGBaJCQkUScgIF1CJCQkJCQmfiAge0AkJCQkJEouIF5xJCQkVS4gICAgICAgICAgaU0lLSAnICA8JiQkQnsgICAgIC5VJCQkcV4gICAgCiAgICAgICBfOCQkJT8gICBgbSQkJEMnIF53JCQkVS4gICAgLSUkJCQmPiAgKEAkJCQkJCQkTCcgYFokJCRDJyAgICAgICAgICAhfiAsZFwgIGlNJCRAKSAgICdcTExMTHtbW14gIAogICF7e3t7eyhZTExDWyAicSQkJFkuIGBwJCQkVS4gICAgIChAJCQkQlsgIGBgYGBgYGBgYGAuICAnMCQkJDAnICAgICAgICAgICA6aCQkZiAgbCMkJCRcICcwJCQkMCJgYGAuICAKICAgICAgICAgPlckJEBcYiQkJGMuICAgciQkJGF+aWlpaWYkJCQkJCRAKGlpaWlpaWlpLiAgICAgICdDJCQkWj5paWk6ICAgICAgOmEkJCR4LiBJbyQkJHJaJCQkTCcgICAgICAgCiAgICAgICAgICAhIyQkJCQkJG4uICAgJzpqTExMOCQkJCQkJCRhP00kJCQkJE1MTCg/fiAgICAgICAgLlUkJCQkJCQkJkpKSkpqLiAsayQkJHYuIDtoJCQkJCQka11JICAgICAgIAogICAgICAgICAgIElvQEBAQGogICAgICdfLWZCQEBAQEBAQEBrLCBsKkBAQEAleywuICAnJycnJycsKSkoMCQkJCQkJCQkJCQkJFlgJyxkJCQkWCcnO2gkJCQkWTo6IicnJycnJyAKICAgICAgICAgICAgLi4uLi4gICAgICAgICAgLi4uLi4uLi4uLiAgIC4uLi4uLiAgICAgLElJPnt+SUk8K2koKD9JMSl+SUk+LUlpe19JbHckJCRaSUlJSUlJSUlJSUlJSUlJSTsgCg==';
+  return Buffer.from(art, 'base64').toString('utf-8');
+};
+
 interface WelcomeScreenProps {
   configRepo: IConfigRepository;
   youtubeService: YouTubeService;
@@ -68,6 +74,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       <Text bold color="cyan">
         Welcome to valiv-cli!
       </Text>
+      <Box marginY={1}>
+        <Text color="#656A75">{getWelcomeMessage()}</Text>
+      </Box>
       <Text>Your personal vα-liv activity tracker.</Text>
       <Box marginTop={1}>
         <Text>Initial members have been registered:</Text>
