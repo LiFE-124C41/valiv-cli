@@ -14,6 +14,7 @@ interface AppProps {
   command: string;
   filterId?: string;
   audioOnly?: boolean;
+  playlist?: string;
   debug?: boolean;
   detail?: boolean;
   interactive?: boolean;
@@ -26,6 +27,7 @@ const App: React.FC<AppProps> = ({
   command,
   filterId: initialFilterId,
   audioOnly,
+  playlist,
   debug,
   detail,
   interactive,
@@ -83,6 +85,7 @@ const App: React.FC<AppProps> = ({
           youtubeService={youtubeService}
           filterId={screenProps.filterId}
           audioOnly={audioOnly}
+          playlist={playlist}
           debug={debug}
           disableColor={disableColor}
         />

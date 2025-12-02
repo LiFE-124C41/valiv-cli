@@ -8,9 +8,12 @@ interface AudioPlayerProps {
     title?: string;
     color?: string;
     symbol?: string;
+    onNext?: () => void;
+    onPrev?: () => void;
+    onReload?: () => void;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title, color, symbol }) => {
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title, color, symbol, onNext, onPrev, onReload }) => {
     const [status, setStatus] = useState<'playing' | 'paused'>('playing');
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -37,6 +40,15 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title
         if (key.downArrow) {
             service.adjustVolume(-5);
             setVolume(prev => Math.max(prev - 5, 0));
+        }
+        if (input === 'n' && onNext) {
+            onNext();
+        }
+        if (input === 'p' && onPrev) {
+            onPrev();
+        }
+        if (input === 'r' && onReload) {
+            onReload();
         }
     });
 
@@ -114,6 +126,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ service, onExit, title
             <Box marginTop={1}>
                 <Text dimColor>
                     [Space] Pause/Resume  [←/→] Seek  [↑/↓] Volume  [q] Stop
+                    {onNext ? '  [n] Next' : ''} {onPrev ? '  [p] Prev' : ''} {onReload ? '  [r] Reload' : ''}
                 </Text>
             </Box>
         </Box>
