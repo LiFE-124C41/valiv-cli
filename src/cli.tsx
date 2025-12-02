@@ -60,6 +60,7 @@ program
   .description('Check recent activities')
   .argument('[id]', 'Filter by creator ID or name')
   .option('-a, --audio-only', 'Play audio only (MPV)')
+  .option('-p, --playlist <path>', 'Path to uta_picker playlist CSV file')
   .option('-d, --debug', 'Enable debug logging to file')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
@@ -68,6 +69,7 @@ program
         command="check"
         filterId={id}
         audioOnly={options.audioOnly}
+        playlist={options.playlist}
         debug={options.debug}
         disableColor={!options.colorCreator}
       />,

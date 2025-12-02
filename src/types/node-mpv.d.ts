@@ -24,6 +24,7 @@ declare module 'node-mpv' {
         adjustVolume(delta: number): Promise<void>;
         on(event: string, callback: any): void;
         getProperty(property: string): Promise<any>;
+        setProperty(property: string, value: any): Promise<void>;
         observeProperty(property: string): void;
     }
 
