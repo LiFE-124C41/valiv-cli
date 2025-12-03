@@ -1,15 +1,37 @@
 import Parser from 'rss-parser';
 import { Activity, Creator } from '../domain/models.js';
-import { IActivityService } from '../domain/interfaces.js';
+import { IActivityService, ICacheRepository } from '../domain/interfaces.js';
 
 export class YouTubeService implements IActivityService {
   private parser: Parser;
 
-  constructor() {
+  constructor(private cacheRepo: ICacheRepository) {
     this.parser = new Parser();
   }
 
-  async getActivities(creators: Creator[]): Promise<Activity[]> {
+  async getActivities(
+    creators: Creator[],
+    forceRefresh = false,
+  ): Promise<Activity[]> {
+    const cacheKey = 'youtube_activities';
+    const cached = this.cacheRepo.get<Activity[]>(cacheKey);
+    const now = new Date();
+
+    if (!forceRefresh && cached) {
+      const cacheDate = new Date(cached.timestamp);
+      if (
+        cacheDate.getDate() === now.getDate() &&
+        cacheDate.getMonth() === now.getMonth() &&
+        cacheDate.getFullYear() === now.getFullYear()
+      ) {
+        // Restore Date objects
+        return cached.data.map((a) => ({
+          ...a,
+          timestamp: new Date(a.timestamp),
+        }));
+      }
+    }
+
     const promises = creators
       .filter((c) => c.youtubeChannelId)
       .map(async (creator) => {
@@ -37,9 +59,12 @@ export class YouTubeService implements IActivityService {
       });
 
     const results = await Promise.all(promises);
-    return results
+    const activities = results
       .flat()
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    this.cacheRepo.set(cacheKey, activities);
+    return activities;
   }
 
   async getChannelInfo(channelId: string): Promise<{ title: string } | null> {

@@ -17,6 +17,7 @@ interface ActivityFeedScreenProps {
   filterId?: string;
   audioOnly?: boolean;
   debug?: boolean;
+  refresh?: boolean;
   disableColor?: boolean;
 }
 
@@ -26,6 +27,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   filterId,
   audioOnly,
   debug,
+  refresh,
   disableColor,
 }) => {
   const { exit } = useApp();
@@ -56,13 +58,13 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       let creators = configRepo.getCreators();
       creators = filterCreators(creators, filterId);
 
-      const results = await youtubeService.getActivities(creators);
+      const results = await youtubeService.getActivities(creators, refresh);
       setActivities(results);
       setLoading(false);
     };
 
     fetchActivities();
-  }, [configRepo, youtubeService, filterId]);
+  }, [configRepo, youtubeService, filterId, refresh]);
 
   const handleSelect = async (item: { value: string }) => {
     if (item.value === 'next_page') {
