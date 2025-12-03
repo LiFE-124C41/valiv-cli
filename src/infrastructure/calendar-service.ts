@@ -1,9 +1,36 @@
 import ical from 'node-ical';
 import { Creator, ScheduleEvent } from '../domain/models.js';
-import { IScheduleService } from '../domain/interfaces.js';
+import { ICacheRepository, IScheduleService } from '../domain/interfaces.js';
 
 export class CalendarService implements IScheduleService {
-  async getSchedules(creators: Creator[]): Promise<ScheduleEvent[]> {
+  constructor(private cacheRepo: ICacheRepository) { }
+
+  async getSchedules(
+    creators: Creator[],
+    forceRefresh = false,
+  ): Promise<ScheduleEvent[]> {
+    const cacheKey = 'calendar_schedules';
+    const cached = this.cacheRepo.get<ScheduleEvent[]>(cacheKey);
+    const now = new Date();
+
+    if (!forceRefresh && cached) {
+      const cacheDate = new Date(cached.timestamp);
+      if (
+        cacheDate.getDate() === now.getDate() &&
+        cacheDate.getMonth() === now.getMonth() &&
+        cacheDate.getFullYear() === now.getFullYear()
+      ) {
+        // Restore Date objects
+        return cached.data
+          .map((e) => ({
+            ...e,
+            startTime: new Date(e.startTime),
+            endTime: e.endTime ? new Date(e.endTime) : undefined,
+          }))
+          .filter((event) => event.startTime >= now); // Re-filter for current time
+      }
+    }
+
     const promises = creators
       .filter((c) => c.calendarUrl)
       .map(async (creator) => {
@@ -35,8 +62,11 @@ export class CalendarService implements IScheduleService {
       });
 
     const results = await Promise.all(promises);
-    return results
+    const schedules = results
       .flat()
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+
+    this.cacheRepo.set(cacheKey, schedules);
+    return schedules;
   }
 }

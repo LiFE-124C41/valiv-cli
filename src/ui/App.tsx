@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Text } from 'ink';
 import { ConfigRepository } from '../infrastructure/config-repository.js';
+import { CacheRepository } from '../infrastructure/cache-repository.js';
 import { YouTubeService } from '../infrastructure/youtube-service.js';
 import { CalendarService } from '../infrastructure/calendar-service.js';
 import WelcomeScreen from './screens/Welcome.js';
@@ -17,6 +18,7 @@ interface AppProps {
   debug?: boolean;
   detail?: boolean;
   interactive?: boolean;
+  refresh?: boolean;
   disableColor?: boolean;
 }
 
@@ -29,12 +31,14 @@ const App: React.FC<AppProps> = ({
   debug,
   detail,
   interactive,
+  refresh,
   disableColor,
 }) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
-  const [youtubeService] = useState(() => new YouTubeService());
-  const [calendarService] = useState(() => new CalendarService());
+  const [cacheRepo] = useState(() => new CacheRepository());
+  const [youtubeService] = useState(() => new YouTubeService(cacheRepo));
+  const [calendarService] = useState(() => new CalendarService(cacheRepo));
 
   // Navigation State
   const [currentScreen, setCurrentScreen] = useState<ScreenName>(
@@ -84,6 +88,7 @@ const App: React.FC<AppProps> = ({
           filterId={screenProps.filterId}
           audioOnly={audioOnly}
           debug={debug}
+          refresh={refresh}
           disableColor={disableColor}
         />
       );
@@ -93,6 +98,7 @@ const App: React.FC<AppProps> = ({
           configRepo={configRepo}
           calendarService={calendarService}
           filterId={screenProps.filterId}
+          refresh={refresh}
           disableColor={disableColor}
         />
       );
