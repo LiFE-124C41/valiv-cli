@@ -19,6 +19,7 @@ interface AppProps {
   detail?: boolean;
   interactive?: boolean;
   refresh?: boolean;
+  week?: boolean;
   disableColor?: boolean;
 }
 
@@ -32,6 +33,7 @@ const App: React.FC<AppProps> = ({
   detail,
   interactive,
   refresh,
+  week,
   disableColor,
 }) => {
   // Dependency Injection (Simple)
@@ -99,6 +101,7 @@ const App: React.FC<AppProps> = ({
           calendarService={calendarService}
           filterId={screenProps.filterId}
           refresh={refresh}
+          week={week}
           disableColor={disableColor}
         />
       );
