@@ -59,6 +59,20 @@ describe('filterCreators', () => {
     expect(result[0].name).toBe('Sara Letora Oliveira Utagawa');
   });
 
+  it('should filter by ID (partial match, case-insensitive)', () => {
+    // "COSMO" matches "cosmo_kamizuru"
+    const result = filterCreators(mockCreators, 'COSMO');
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Cosmo Kamizuru');
+  });
+
+  it('should filter by X Username (partial match, case-insensitive)', () => {
+    // "letora" matches "UtagawaLetora"
+    const result = filterCreators(mockCreators, 'letora');
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Sara Letora Oliveira Utagawa');
+  });
+
   it('should return empty array if no match found', () => {
     const result = filterCreators(mockCreators, 'unknown');
     expect(result).toHaveLength(0);

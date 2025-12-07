@@ -189,10 +189,24 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         return;
       }
 
-      let creators = configRepo.getCreators();
-      creators = filterCreators(creators, filterId);
+      const allCreators = configRepo.getCreators();
+      // Filter creators based on input (case-insensitive, partial match)
+      const targetCreators = filterCreators(allCreators, filterId);
 
-      const results = await youtubeService.getActivities(creators, refresh);
+      // Always fetch for ALL creators to ensure cache consistency/utilization
+      // If we only passed targetCreators, the service might return cached data for ALL (if exists),
+      // or if it fetches fresh, it might overwrite the global cache with partial data.
+      // Current architecture prefers fetching all to keep "youtube_activities" cache complete.
+      const allActivities = await youtubeService.getActivities(
+        allCreators,
+        refresh,
+      );
+
+      // Filter the returned activities to only include those from targetCreators
+      const results = allActivities.filter((activity) =>
+        targetCreators.some((c) => c.id === activity.author?.id),
+      );
+
       setActivities(results);
       setLoading(false);
     };
