@@ -14,6 +14,7 @@ interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
   calendarService: IScheduleService;
   filterId?: string;
+  refresh?: boolean;
   disableColor?: boolean;
 }
 
@@ -21,6 +22,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   configRepo,
   calendarService,
   filterId,
+  refresh,
   disableColor,
 }) => {
   const { exit } = useApp();
@@ -55,13 +57,13 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
       let creators = configRepo.getCreators();
       creators = filterCreators(creators, filterId);
 
-      const results = await calendarService.getSchedules(creators);
+      const results = await calendarService.getSchedules(creators, refresh);
       setEvents(results);
       setLoading(false);
     };
 
     fetchSchedules();
-  }, [configRepo, calendarService, filterId]);
+  }, [configRepo, calendarService, filterId, refresh]);
 
   if (loading) {
     return (

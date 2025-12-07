@@ -61,6 +61,7 @@ program
   .argument('[id]', 'Filter by creator ID or name')
   .option('-a, --audio-only', 'Play audio only (MPV)')
   .option('-d, --debug', 'Enable debug logging to file')
+  .option('-r, --refresh', 'Force refresh data')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
@@ -69,6 +70,7 @@ program
         filterId={id}
         audioOnly={options.audioOnly}
         debug={options.debug}
+        refresh={options.refresh}
         disableColor={!options.colorCreator}
       />,
     );
@@ -78,12 +80,14 @@ program
   .command('schedule')
   .description('Check upcoming schedules')
   .argument('[id]', 'Filter by creator ID or name')
+  .option('-r, --refresh', 'Force refresh data')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
       <App
         command="schedule"
         filterId={id}
+        refresh={options.refresh}
         disableColor={!options.colorCreator}
       />,
     );

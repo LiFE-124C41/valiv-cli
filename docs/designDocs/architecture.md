@@ -33,7 +33,8 @@ src/
 │   ├── youtube-service.ts  # YouTube RSS処理
 │   ├── calendar-service.ts # Google Calendar iCal処理
 │   ├── video-player-service.ts # 動画再生 (MPV/Browser)
-│   └── config-repository.ts # 設定ファイル読み書き
+│   ├── config-repository.ts # 設定ファイル読み書き
+│   └── cache-repository.ts # データキャッシュ (conf)
 ├── ui/               # プレゼンテーション層 (UI): Inkコンポーネント
 │   ├── App.tsx       # メインコンポーネント
 │   ├── components/   # 再利用可能なUI部品
