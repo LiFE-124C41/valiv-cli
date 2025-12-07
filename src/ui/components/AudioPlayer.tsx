@@ -74,7 +74,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         if (dur !== null && dur !== undefined) {
           setDuration(Number(dur));
         }
-      } catch (e) {
+      } catch {
         // Ignore errors during polling
       }
     }, 1000);

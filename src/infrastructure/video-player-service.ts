@@ -84,7 +84,7 @@ export class VideoPlayerService implements IVideoPlayerService {
                 if (typeof timePos === 'number') {
                   break; // Playback started
                 }
-              } catch (e) {
+              } catch {
                 // Ignore errors while waiting
               }
               await new Promise((resolve) => setTimeout(resolve, 500));
