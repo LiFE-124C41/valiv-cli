@@ -6,10 +6,9 @@ import {
   IConfigRepository,
   IScheduleService,
 } from '../../domain/interfaces.js';
-import { ScheduleEvent, Creator } from '../../domain/models.js';
+import { ScheduleEvent } from '../../domain/models.js';
 import { filterCreators } from '../../utils/filter.js';
 import WeeklyScheduleView from '../components/WeeklyScheduleView.js';
-
 
 interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
@@ -113,9 +112,7 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
       <Text bold underline>
         Upcoming Schedules (Page {page}/{totalPages})
       </Text>
-      <Text dimColor>
-        Use Left/Right arrows to navigate, 'q' to exit.
-      </Text>
+      <Text dimColor>Use Left/Right arrows to navigate, 'q' to exit.</Text>
       {Object.entries(groupedEvents).map(
         ([date, dateEvents]: [string, ScheduleEvent[]]) => (
           <Box key={date} flexDirection="column" marginTop={1}>
@@ -137,9 +134,13 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
                       minute: '2-digit',
                     })}
                     ]
-                  </Text>
-                  {' '}
-                  <Text bold color={disableColor ? undefined : (event.author?.color || 'yellow')}>
+                  </Text>{' '}
+                  <Text
+                    bold
+                    color={
+                      disableColor ? undefined : event.author?.color || 'yellow'
+                    }
+                  >
                     {event.author?.symbol ? `${event.author.symbol} ` : ''}
                     {event.title}
                   </Text>

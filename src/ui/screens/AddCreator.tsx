@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Text, Box, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import Spinner from 'ink-spinner';
@@ -115,7 +115,10 @@ const AddCreatorScreen: React.FC<AddCreatorScreenProps> = ({
           {step === 1.5 && (
             <Box flexDirection="column" marginTop={1}>
               <Text>
-                Found channel name: <Text bold color="cyan">{fetchedName}</Text>
+                Found channel name:{' '}
+                <Text bold color="cyan">
+                  {fetchedName}
+                </Text>
               </Text>
               <Text>Update name to this? (Y/n)</Text>
             </Box>

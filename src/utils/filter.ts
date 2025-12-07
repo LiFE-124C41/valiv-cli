@@ -9,20 +9,23 @@ import { Creator } from '../domain/models.js';
  * @param query Search query string
  * @returns Filtered list of creators
  */
-export const filterCreators = (creators: Creator[], query?: string): Creator[] => {
-    if (!query) {
-        return creators;
-    }
+export const filterCreators = (
+  creators: Creator[],
+  query?: string,
+): Creator[] => {
+  if (!query) {
+    return creators;
+  }
 
-    const keywords = query.toLowerCase().split(/\s+/);
+  const keywords = query.toLowerCase().split(/\s+/);
 
-    return creators.filter((c: Creator) => {
-        return keywords.every((keyword) => {
-            return (
-                c.name.toLowerCase().includes(keyword) ||
-                c.id.toLowerCase().includes(keyword) ||
-                (c.xUsername && c.xUsername.toLowerCase().includes(keyword))
-            );
-        });
+  return creators.filter((c: Creator) => {
+    return keywords.every((keyword) => {
+      return (
+        c.name.toLowerCase().includes(keyword) ||
+        c.id.toLowerCase().includes(keyword) ||
+        (c.xUsername && c.xUsername.toLowerCase().includes(keyword))
+      );
     });
+  });
 };

@@ -143,41 +143,47 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
         Registered Creators
       </Text>
       <Box marginTop={1} flexDirection="column">
-        {detail ? (
-          // Detailed View
-          creators.map((creator) => (
-            <Box key={creator.id} flexDirection="column" marginBottom={1}>
-              <Text bold color={disableColor ? 'green' : (creator.color || 'green')}>
-                {creator.symbol ? `${creator.symbol} ` : ''}{creator.name}
-              </Text>
-              <Box marginLeft={2} flexDirection="column">
-                <Text>ID: {creator.id}</Text>
-                {creator.youtubeChannelId && (
-                  <Text>YouTube: {creator.youtubeChannelId}</Text>
-                )}
-                {creator.twitchChannelId && (
-                  <Text>Twitch: {creator.twitchChannelId}</Text>
-                )}
-                {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
-                {creator.calendarUrl && <Text>Calendar: Registered</Text>}
+        {detail
+          ? // Detailed View
+            creators.map((creator) => (
+              <Box key={creator.id} flexDirection="column" marginBottom={1}>
+                <Text
+                  bold
+                  color={disableColor ? 'green' : creator.color || 'green'}
+                >
+                  {creator.symbol ? `${creator.symbol} ` : ''}
+                  {creator.name}
+                </Text>
+                <Box marginLeft={2} flexDirection="column">
+                  <Text>ID: {creator.id}</Text>
+                  {creator.youtubeChannelId && (
+                    <Text>YouTube: {creator.youtubeChannelId}</Text>
+                  )}
+                  {creator.twitchChannelId && (
+                    <Text>Twitch: {creator.twitchChannelId}</Text>
+                  )}
+                  {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
+                  {creator.calendarUrl && <Text>Calendar: Registered</Text>}
+                </Box>
               </Box>
-            </Box>
-          ))
-        ) : (
-          // Simple View
-          creators.map((creator) => (
-            <Box key={creator.id}>
-              <Text bold color={disableColor ? 'green' : (creator.color || 'green')}>
-                {creator.symbol ? `${creator.symbol} ` : ''}{creator.name}
-              </Text>
-              <Text> - </Text>
-              <Text dimColor>
-                {creator.youtubeChannelId ? 'YT ' : ''}
-                {creator.calendarUrl ? 'Cal ' : ''}
-              </Text>
-            </Box>
-          ))
-        )}
+            ))
+          : // Simple View
+            creators.map((creator) => (
+              <Box key={creator.id}>
+                <Text
+                  bold
+                  color={disableColor ? 'green' : creator.color || 'green'}
+                >
+                  {creator.symbol ? `${creator.symbol} ` : ''}
+                  {creator.name}
+                </Text>
+                <Text> - </Text>
+                <Text dimColor>
+                  {creator.youtubeChannelId ? 'YT ' : ''}
+                  {creator.calendarUrl ? 'Cal ' : ''}
+                </Text>
+              </Box>
+            ))}
       </Box>
     </Box>
   );
