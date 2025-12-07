@@ -11,7 +11,7 @@
     "build": "tsup src/cli.tsx --format esm --clean",
     "dev": "tsup src/cli.tsx --format esm --watch --onSuccess \"node dist/cli.js\"",
     "test": "vitest",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src",
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "keywords": [
@@ -43,13 +43,15 @@
     "@types/react": "^19.2.7",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "@typescript-eslint/parser": "^8.48.1",
-    "eslint": "^8.50.0",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.5.0",
     "prettier": "^3.7.4",
     "ts-node": "^10.9.1",
     "tsup": "^8.0.0",
     "typescript": "^5.2.2",
+    "typescript-eslint": "^8.48.1",
     "vitest": "^3.2.4"
   }
 }
