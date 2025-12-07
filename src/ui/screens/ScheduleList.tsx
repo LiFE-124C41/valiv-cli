@@ -56,10 +56,17 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
 
   useEffect(() => {
     const fetchSchedules = async () => {
-      let creators = configRepo.getCreators();
-      creators = filterCreators(creators, filterId);
+      const allCreators = configRepo.getCreators();
+      const targetCreators = filterCreators(allCreators, filterId);
 
-      const results = await calendarService.getSchedules(creators, refresh);
+      const allSchedules = await calendarService.getSchedules(
+        allCreators,
+        refresh,
+      );
+
+      const results = allSchedules.filter((event) =>
+        targetCreators.some((c) => c.id === event.author?.id),
+      );
       setEvents(results);
       setLoading(false);
     };
