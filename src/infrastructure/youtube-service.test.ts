@@ -10,6 +10,7 @@ describe('YouTubeService', () => {
   let service: YouTubeService;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockParserInstance: any;
+  let cacheRepoMock: { get: Mock; set: Mock; clear: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,7 +23,12 @@ describe('YouTubeService', () => {
     // When new Parser() is called, return our mock instance
     (Parser as unknown as Mock).mockReturnValue(mockParserInstance);
 
-    service = new YouTubeService();
+    cacheRepoMock = {
+      get: vi.fn().mockReturnValue(null),
+      set: vi.fn(),
+      clear: vi.fn(),
+    };
+    service = new YouTubeService(cacheRepoMock);
   });
 
   describe('getActivities', () => {
@@ -67,7 +73,7 @@ describe('YouTubeService', () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Network error'));
 
       // Console error mock to keep output clean
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       const activities = await service.getActivities([creator]);
 
@@ -76,15 +82,15 @@ describe('YouTubeService', () => {
     });
 
     it('should ignore creators without youtubeChannelId', async () => {
-        const creatorNoId: Creator = {
-            id: '2',
-            name: 'No ID Creator',
-        };
+      const creatorNoId: Creator = {
+        id: '2',
+        name: 'No ID Creator',
+      };
 
-        const activities = await service.getActivities([creatorNoId]);
+      const activities = await service.getActivities([creatorNoId]);
 
-        expect(mockParserInstance.parseURL).not.toHaveBeenCalled();
-        expect(activities).toHaveLength(0);
+      expect(mockParserInstance.parseURL).not.toHaveBeenCalled();
+      expect(activities).toHaveLength(0);
     });
   });
 
@@ -101,7 +107,7 @@ describe('YouTubeService', () => {
 
     it('should return null on error', async () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Error'));
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       const info = await service.getChannelInfo('channel-id');
 

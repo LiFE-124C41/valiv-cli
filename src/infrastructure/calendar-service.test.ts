@@ -16,10 +16,16 @@ vi.mock('node-ical', () => {
 
 describe('CalendarService', () => {
   let service: CalendarService;
+  let cacheRepoMock: { get: Mock; set: Mock; clear: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new CalendarService();
+    cacheRepoMock = {
+      get: vi.fn().mockReturnValue(null),
+      set: vi.fn(),
+      clear: vi.fn(),
+    };
+    service = new CalendarService(cacheRepoMock);
   });
 
   describe('getSchedules', () => {
@@ -83,7 +89,7 @@ describe('CalendarService', () => {
       );
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const schedules = await service.getSchedules([creator]);
 
@@ -92,15 +98,15 @@ describe('CalendarService', () => {
     });
 
     it('should ignore creators without calendarUrl', async () => {
-        const creatorNoUrl: Creator = {
-            id: '2',
-            name: 'No URL Creator',
-        };
+      const creatorNoUrl: Creator = {
+        id: '2',
+        name: 'No URL Creator',
+      };
 
-        const schedules = await service.getSchedules([creatorNoUrl]);
+      const schedules = await service.getSchedules([creatorNoUrl]);
 
-        expect(ical.async.fromURL).not.toHaveBeenCalled();
-        expect(schedules).toHaveLength(0);
+      expect(ical.async.fromURL).not.toHaveBeenCalled();
+      expect(schedules).toHaveLength(0);
     });
   });
 });
