@@ -8,12 +8,15 @@ import {
 } from '../../domain/interfaces.js';
 import { ScheduleEvent, Creator } from '../../domain/models.js';
 import { filterCreators } from '../../utils/filter.js';
-import { stripHtml } from '../../utils/stringUtils.js';
+import WeeklyScheduleView from '../components/WeeklyScheduleView.js';
+
 
 interface ScheduleListScreenProps {
   configRepo: IConfigRepository;
   calendarService: IScheduleService;
   filterId?: string;
+  refresh?: boolean;
+  week?: boolean;
   disableColor?: boolean;
 }
 
@@ -21,6 +24,8 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
   configRepo,
   calendarService,
   filterId,
+  refresh,
+  week,
   disableColor,
 }) => {
   const { exit } = useApp();
@@ -55,13 +60,13 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
       let creators = configRepo.getCreators();
       creators = filterCreators(creators, filterId);
 
-      const results = await calendarService.getSchedules(creators);
+      const results = await calendarService.getSchedules(creators, refresh);
       setEvents(results);
       setLoading(false);
     };
 
     fetchSchedules();
-  }, [configRepo, calendarService, filterId]);
+  }, [configRepo, calendarService, filterId, refresh]);
 
   if (loading) {
     return (
@@ -99,6 +104,10 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
     {} as Record<string, ScheduleEvent[]>,
   );
 
+  if (week) {
+    return <WeeklyScheduleView events={events} disableColor={disableColor} />;
+  }
+
   return (
     <Box flexDirection="column" padding={1}>
       <Text bold underline>
@@ -116,53 +125,33 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
             {dateEvents.map((event) => (
               <Box
                 key={event.id}
-                flexDirection="column"
+                flexDirection="row"
                 marginLeft={2}
-                marginBottom={1}
-                borderStyle="round"
-                borderColor={disableColor ? 'gray' : (event.author?.color || 'gray')}
-                paddingX={1}
+                marginBottom={0}
               >
-                <Box>
-                  <Text bold color="yellow">
-                    {event.author?.symbol ? `${event.author.symbol} ` : ''}{event.title}
-                  </Text>
-                </Box>
-                <Box>
-                  <Text>
+                <Text>
+                  <Text color={disableColor ? undefined : 'cyan'}>
+                    [
                     {event.startTime.toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
-                    {event.endTime
-                      ? ` - ${event.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                      : ''}
-                    <Text dimColor>
-                      {' '}
-                      (
-                      {formatDistanceToNow(event.startTime, {
-                        addSuffix: true,
-                      })}
-                      )
-                    </Text>
+                    ]
                   </Text>
-                </Box>
-                {event.description && (
-                  <Box marginTop={0}>
-                    <Text dimColor>
-                      {stripHtml(event.description).length > 100
-                        ? stripHtml(event.description).substring(0, 100) + '...'
-                        : stripHtml(event.description)}
-                    </Text>
-                  </Box>
-                )}
-                {event.url && (
-                  <Box marginTop={0}>
-                    <Text color="blue" underline>
-                      {event.url}
-                    </Text>
-                  </Box>
-                )}
+                  {' '}
+                  <Text bold color={disableColor ? undefined : (event.author?.color || 'yellow')}>
+                    {event.author?.symbol ? `${event.author.symbol} ` : ''}
+                    {event.title}
+                  </Text>
+                  <Text dimColor>
+                    {' '}
+                    (
+                    {formatDistanceToNow(event.startTime, {
+                      addSuffix: true,
+                    })}
+                    )
+                  </Text>
+                </Text>
               </Box>
             ))}
           </Box>

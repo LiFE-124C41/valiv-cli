@@ -2,18 +2,22 @@ import { Activity, Creator, ScheduleEvent } from './models.js';
 
 export interface ICreatorRepository {
   getAll(): Promise<Creator[]>;
-  get(id: string): Promise<Creator | undefined>;
-  add(creator: Creator): Promise<void>;
-  update(creator: Creator): Promise<void>;
-  delete(id: string): Promise<void>;
+  removeCreator(id: string): void;
+}
+
+export interface ICacheRepository {
+  get<T>(key: string): { data: T; timestamp: number } | null;
+  set<T>(key: string, data: T): void;
+  clear(key: string): void;
 }
 
 export interface IActivityService {
-  getActivities(creators: Creator[]): Promise<Activity[]>;
+  getActivities(creators: Creator[], forceRefresh?: boolean): Promise<Activity[]>;
+  getChannelInfo(channelId: string): Promise<{ title: string } | null>;
 }
 
 export interface IScheduleService {
-  getSchedules(creators: Creator[]): Promise<ScheduleEvent[]>;
+  getSchedules(creators: Creator[], forceRefresh?: boolean): Promise<ScheduleEvent[]>;
 }
 
 export interface IConfigRepository {

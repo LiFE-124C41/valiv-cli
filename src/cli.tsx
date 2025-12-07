@@ -62,6 +62,7 @@ program
   .option('-a, --audio-only', 'Play audio only (MPV)')
   .option('-p, --playlist <path>', 'Path to uta_picker playlist CSV file')
   .option('-d, --debug', 'Enable debug logging to file')
+  .option('-r, --refresh', 'Force refresh data')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
@@ -71,6 +72,7 @@ program
         audioOnly={options.audioOnly}
         playlist={options.playlist}
         debug={options.debug}
+        refresh={options.refresh}
         disableColor={!options.colorCreator}
       />,
     );
@@ -80,12 +82,16 @@ program
   .command('schedule')
   .description('Check upcoming schedules')
   .argument('[id]', 'Filter by creator ID or name')
+  .option('-r, --refresh', 'Force refresh data')
+  .option('-w, --week', 'Show weekly graphical view')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
       <App
         command="schedule"
         filterId={id}
+        refresh={options.refresh}
+        week={options.week}
         disableColor={!options.colorCreator}
       />,
     );

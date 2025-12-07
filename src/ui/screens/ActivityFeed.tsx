@@ -19,6 +19,7 @@ interface ActivityFeedScreenProps {
   audioOnly?: boolean;
   playlist?: string;
   debug?: boolean;
+  refresh?: boolean;
   disableColor?: boolean;
 }
 
@@ -38,6 +39,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   audioOnly,
   playlist,
   debug,
+  refresh,
   disableColor,
 }) => {
   const { exit } = useApp();
@@ -178,13 +180,13 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       let creators = configRepo.getCreators();
       creators = filterCreators(creators, filterId);
 
-      const results = await youtubeService.getActivities(creators);
+      const results = await youtubeService.getActivities(creators, refresh);
       setActivities(results);
       setLoading(false);
     };
 
     fetchActivities();
-  }, [configRepo, youtubeService, filterId, playlist, loadPlaylistFromFile]);
+  }, [configRepo, youtubeService, filterId, playlist, loadPlaylistFromFile, refresh]);
 
   const handleNext = () => {
     if (currentPlaylistIndex < playlistItems.length - 1) {
