@@ -124,6 +124,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       borderStyle="round"
       borderColor={color || 'cyan'}
       padding={1}
+      marginX={1}
     >
       <Text bold color={color || 'green'}>
         {symbol ? `${symbol} ` : ''}Audio Player
