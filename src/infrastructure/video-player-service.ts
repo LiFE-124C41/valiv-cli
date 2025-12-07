@@ -39,6 +39,8 @@ export class VideoPlayerService implements IVideoPlayerService {
             '--demuxer-readahead-secs=20',
             '--ytdl-raw-options-append=verbose=',
             '--ytdl-raw-options-append=retries=3',
+            '--no-terminal',
+            '--really-quiet',
           ];
           if (options?.audioOnly) {
             mpvArgs.push('--no-video');
