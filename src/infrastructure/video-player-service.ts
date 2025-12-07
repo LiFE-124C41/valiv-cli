@@ -7,6 +7,8 @@ const execAsync = promisify(exec);
 export interface VideoPlayerOptions {
     audioOnly?: boolean;
     debug?: boolean;
+    start?: number;
+    end?: number;
 }
 
 export interface IVideoPlayerService {
@@ -45,6 +47,7 @@ export class VideoPlayerService implements IVideoPlayerService {
                         mpvArgs.push('--log-file=valiv_debug.log');
                         mpvArgs.push('--msg-level=all=trace');
                     }
+                    // Removed global start/end args to prevent persistence across playlist items
 
                     this.mpv = new NodeMpv({
                         verbose: options?.debug || false,
@@ -61,9 +64,44 @@ export class VideoPlayerService implements IVideoPlayerService {
                 this.mpv?.observeProperty('duration');
                 this.mpv?.observeProperty('time-pos');
 
-                await this.mpv.load(url);
-                // NodeMpv automatically plays after load usually, but ensure it.
-                // If it's already playing, load replaces the content.
+                if (this.mpv) {
+                    try {
+                        await this.mpv.load(url);
+
+                        // Wait for playback to start by polling time-pos
+                        // This ensures the video is actually loaded and ready to seek
+                        let attempts = 0;
+                        const maxAttempts = 20; // Wait up to 10 seconds (20 * 500ms)
+
+                        while (attempts < maxAttempts) {
+                            try {
+                                const timePos = await this.mpv.getProperty('time-pos');
+                                if (typeof timePos === 'number') {
+                                    break; // Playback started
+                                }
+                            } catch (e) {
+                                // Ignore errors while waiting
+                            }
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            attempts++;
+                        }
+
+                        // Apply start time if provided
+                        if (options?.start !== undefined && options.start > 0) {
+                            await this.mpv.seek(options.start);
+                        }
+
+                        // Apply end time if provided
+                        if (options?.end !== undefined) {
+                            await this.mpv.setProperty('end', options.end);
+                        } else {
+                            await this.mpv.setProperty('end', 'none');
+                        }
+                    } catch (error) {
+                        console.error('Failed to load/seek with MPV:', error);
+                        throw error;
+                    }
+                }
             } catch (error) {
                 console.error('Failed to play with MPV, falling back to browser:', error);
                 this.fallbackToBrowser(url);
