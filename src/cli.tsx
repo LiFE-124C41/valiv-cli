@@ -81,6 +81,7 @@ program
   .description('Check upcoming schedules')
   .argument('[id]', 'Filter by creator ID or name')
   .option('-r, --refresh', 'Force refresh data')
+  .option('-w, --week', 'Show weekly graphical view')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
@@ -88,6 +89,7 @@ program
         command="schedule"
         filterId={id}
         refresh={options.refresh}
+        week={options.week}
         disableColor={!options.colorCreator}
       />,
     );
