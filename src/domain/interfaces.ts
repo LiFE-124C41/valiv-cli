@@ -12,12 +12,18 @@ export interface ICacheRepository {
 }
 
 export interface IActivityService {
-  getActivities(creators: Creator[], forceRefresh?: boolean): Promise<Activity[]>;
+  getActivities(
+    creators: Creator[],
+    forceRefresh?: boolean,
+  ): Promise<Activity[]>;
   getChannelInfo(channelId: string): Promise<{ title: string } | null>;
 }
 
 export interface IScheduleService {
-  getSchedules(creators: Creator[], forceRefresh?: boolean): Promise<ScheduleEvent[]>;
+  getSchedules(
+    creators: Creator[],
+    forceRefresh?: boolean,
+  ): Promise<ScheduleEvent[]>;
 }
 
 export interface IConfigRepository {

@@ -53,6 +53,7 @@ src/
 - **カレンダー処理**: node-ical
 - **動画再生**: node-mpv (MPV連携)
 - **テスト**: Vitest
+- **CI**: GitHub Actions (Lint, Build, Test)
 
 ## 設計原則
 
