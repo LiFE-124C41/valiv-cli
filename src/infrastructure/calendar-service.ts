@@ -35,7 +35,6 @@ export class CalendarService implements IScheduleService {
       .filter((c) => c.calendarUrl)
       .map(async (creator) => {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const events = await ical.async.fromURL(creator.calendarUrl!);
           const now = new Date();
 
