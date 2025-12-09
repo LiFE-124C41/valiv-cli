@@ -4,7 +4,11 @@ import Parser from 'rss-parser';
 import { Creator } from '../domain/models.js';
 
 // Mock rss-parser
-vi.mock('rss-parser');
+vi.mock('rss-parser', () => {
+  return {
+    default: vi.fn(),
+  };
+});
 
 describe('YouTubeService', () => {
   let service: YouTubeService;
@@ -21,7 +25,7 @@ describe('YouTubeService', () => {
     };
 
     // When new Parser() is called, return our mock instance
-    (Parser as unknown as Mock).mockReturnValue(mockParserInstance);
+    (Parser as unknown as Mock).mockImplementation(() => mockParserInstance);
 
     cacheRepoMock = {
       get: vi.fn().mockReturnValue(null),

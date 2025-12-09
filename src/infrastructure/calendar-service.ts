@@ -3,7 +3,7 @@ import { Creator, ScheduleEvent } from '../domain/models.js';
 import { ICacheRepository, IScheduleService } from '../domain/interfaces.js';
 
 export class CalendarService implements IScheduleService {
-  constructor(private cacheRepo: ICacheRepository) {}
+  constructor(private cacheRepo: ICacheRepository) { }
 
   async getSchedules(
     creators: Creator[],
@@ -35,7 +35,7 @@ export class CalendarService implements IScheduleService {
       .filter((c) => c.calendarUrl)
       .map(async (creator) => {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
           const events = await ical.async.fromURL(creator.calendarUrl!);
           const now = new Date();
 
