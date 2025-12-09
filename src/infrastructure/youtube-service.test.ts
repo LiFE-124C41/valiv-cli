@@ -25,7 +25,9 @@ describe('YouTubeService', () => {
     };
 
     // When new Parser() is called, return our mock instance
-    (Parser as unknown as Mock).mockImplementation(() => mockParserInstance);
+    (Parser as unknown as Mock).mockImplementation(function () {
+      return mockParserInstance;
+    });
 
     cacheRepoMock = {
       get: vi.fn().mockReturnValue(null),
@@ -79,7 +81,7 @@ describe('YouTubeService', () => {
       // Console error mock to keep output clean
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const activities = await service.getActivities([creator]);
 
@@ -115,7 +117,7 @@ describe('YouTubeService', () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Error'));
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const info = await service.getChannelInfo('channel-id');
 
