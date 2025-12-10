@@ -6,60 +6,70 @@
 ## 前提条件
 
 - ローカル環境で `master` (または `main`) ブランチが最新であること。
-- 開発用依存関係がインストールされていること (`npm install`)。
-- **初回のみ**: GitHub リポジトリの Secrets に `NPM_TOKEN` が設定されていること。
-    - npm のウェブサイトで Automation Token を発行し、GitHub リポジトリ設定 > Secrets and variables > Actions に登録してください。
+- **初回のみ**: GitHub リポジトリの Secrets に以下のトークンが設定されていること。
+    - `NPM_TOKEN`: npm の Automation Token (Publish権限)。
+    - `BOT_TOKEN`: GitHub の Fine-grained Personal Access Token (Contents:Write, Workflows:Write)。
+        - ※ GitHub Actions からのタグプッシュで後続のワークフローをトリガーするために必要です。
 
-## リリースフロー
+## リリース手順 (推奨: GitHub Actions)
+
+GitHub Actions を利用して、ブラウザ上から安全にリリースを行う方法です。
+
+1. GitHub リポジトリの **Actions** タブを開きます。
+2. 左側のワークフロー一覧から **Bump Version** を選択します。
+3. **Run workflow** ドロップダウンをクリックします。
+4. **Version level** (patch / minor / major) を選択し、**Run workflow** ボタンを押します。
+
+これだけで、以下の処理が自動的に行われます：
+1. バージョンの更新 (`package.json`, `package-lock.json`)
+2. Gitタグの作成とプッシュ
+3. **Release** ワークフローのトリガー
+    - テスト・ビルド
+    - GitHub Release 作成
+    - npm への公開
+
+## リリース手順 (代替: ローカル実行)
+
+手動でコマンドを実行してリリースを行う方法です。
 
 ### 1. ローカルでの事前確認
-
-リリース前に、ローカルでテストとLintが通ることを確認することを推奨します。
 
 ```bash
 npm run lint
 npm run test
 ```
 
-### 2. バージョンの更新とタグ作成
+### 2. リリースコマンドの実行
 
-`npm version` コマンドを使用して、`package.json` のバージョン更新と git タグの作成を同時に行います。
+`npm run release` コマンドを使用します（内部で `npm version` が実行されます）。
 
 ```bash
 # パッチバージョン (0.0.1 -> 0.0.2)
-npm version patch
+npm run release -- patch
 
 # マイナーバージョン (0.0.1 -> 0.1.0)
-npm version minor
+npm run release -- minor
 
 # メジャーバージョン (0.0.1 -> 1.0.0)
-npm version major
+npm run release -- major
 ```
 
-このコマンドは以下の処理を自動で行います：
-1. `package.json` と `package-lock.json` のバージョン番号を更新
+このコマンドは以下を自動で行います：
+1. バージョン番号の更新
 2. git commit の作成
-3. git tag の作成（例: `v0.0.2`）
+3. git tag の作成
 
 ### 3. リモートへのプッシュ
 
-更新内容とタグをリモートリポジトリへプッシュします。
-`--follow-tags` オプションをつけることで、コミットと同時にタグもプッシュされます。
+**重要**: タグも一緒にプッシュする必要があります。
 
 ```bash
 git push origin main --follow-tags
 ```
 
-### 4. 自動リリースの確認
+タグがプッシュされると、GitHub Actions の **Release** ワークフローが自動的に開始されます。
 
-タグがプッシュされると、GitHub Actions の `Release` ワークフローが自動的に開始されます。
-[Actions タブ](https://github.com/LiFE-124C41/valiv-cli/actions) から進行状況を確認できます。
+## リリース後の確認
 
-処理が成功すると：
-1. **GitHub Release**: 新しいリリースが作成され、変更履歴（Release Notes）が自動生成されます。
-2. **NPM Publish**: パッケージが npm レジストリに公開されます。
-
-### 5. リリース後の確認
-
-- GitHub の Releases ページで内容を確認します。
-- npm パッケージページで新しいバージョンが公開されているか確認します。
+- [GitHub Releases](https://github.com/LiFE-124C41/valiv-cli/releases) でリリースが作成されているか確認。
+- [npm package](https://www.npmjs.com/package/valiv-cli) でバージョンが更新されているか確認。
