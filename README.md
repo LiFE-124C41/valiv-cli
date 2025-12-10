@@ -7,10 +7,9 @@ YouTube, Twitch, X, Google Calendar などの情報を集約し、ターミナ�
 ## 特徴
 
 *   📺 **YouTube**: 最新動画や配信予定をチェック
-*   🎮 **Twitch**: 配信状況を確認
+*   🎮 **Twitch**: 配信状況を確認 (予定)
 *   🐦 **X**: 最新のポストを確認 (予定)
 *   📅 **Calendar**: Google Calendar (iCal) からスケジュールを取得
-*   🚀 **Interactive UI**: Ink を使用したモダンな操作感
 
 ## インストール
 
@@ -53,12 +52,25 @@ valiv init
 valiv add
 ```
 
+### クリエイターの削除
+
+登録済みのクリエイターを削除します。
+
+```bash
+valiv remove
+```
+
 ### 登録済みクリエイターの一覧
 
 登録したクリエイターの情報を確認します。
 
 ```bash
 valiv list
+# 詳細表示
+valiv list --detail
+# インタラクティブモード
+valiv list --interactive
+
 ```
 
 ### 最新アクティビティの確認
@@ -69,6 +81,11 @@ valiv list
 valiv check
 # 特定のクリエイターのみチェックする場合
 valiv check "Creator Name"
+# キャッシュを無視して強制更新
+valiv check --refresh
+# プレイリストを指定して再生
+valiv check --playlist /path/to/playlist.csv
+
 ```
 
 *   **操作方法**:
@@ -80,6 +97,12 @@ valiv check "Creator Name"
     *   `--audio-only` (`-a`) オプションを指定すると、映像なし（音声のみ）で再生します。
         *   音声再生中は `q` キーを押すことで再生を停止し、CLIを終了できます。
     *   `--debug` (`-d`) オプションを指定すると、`valiv_debug.log` に詳細なログ（yt-dlpの出力含む）を出力します。
+    *   `--refresh` (`-r`) オプションを使用すると、キャッシュを無視して最新のデータを取得します。
+    *   `--playlist` (`-p`) オプションでプレイリストCSVを指定して再生できます。
+*   **取得データの制限**:
+    *   YouTubeの情報はRSSフィードから取得しているため、直近の15件程度の動画/配信のみが表示されます。
+    *   配信予定枠などはRSSに含まれない場合があり、表示されないことがあります。
+    *   **次回アップデート予定**: 次期開発にて YouTube Data API との連携を行い、これらの制限を解消してより多くのデータを表示できるようにする予定です。
 
 ### スケジュールの確認
 
@@ -89,6 +112,11 @@ Google Calendar から取得したスケジュールを表示します。
 valiv schedule
 # 特定のクリエイターのみチェックする場合
 valiv schedule "Creator Name"
+# 週間カレンダー表示
+valiv schedule --week
+# 強制更新
+valiv schedule --refresh
+
 ```
 
 ## 開発
