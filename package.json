@@ -1,6 +1,6 @@
 {
   "name": "valiv-cli",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "CLI tool for tracking vα-liv activities",
   "main": "dist/cli.js",
