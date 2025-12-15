@@ -7,6 +7,7 @@
   "bin": {
     "valiv": "dist/cli.js"
   },
+  "preferGlobal": true,
   "files": [
     "dist"
   ],
