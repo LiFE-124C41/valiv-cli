@@ -26,6 +26,10 @@
     "imas",
     "idolmaster"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "author": "",
   "license": "MIT",
   "dependencies": {
