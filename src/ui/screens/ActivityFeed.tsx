@@ -428,7 +428,8 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         Recent Activities (Page {page})
       </Text>
       <Text dimColor>
-        Select an activity to open in browser (or MPV if available). Press 'q' to exit.
+        Select an activity to open in browser (or MPV if available). Press 'q'
+        to exit.
       </Text>
       <Box marginTop={1}>
         <SelectInput

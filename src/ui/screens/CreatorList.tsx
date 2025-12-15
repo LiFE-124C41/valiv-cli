@@ -35,7 +35,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
     }
   }, [interactive, exit]);
 
-  useInput((input, key) => {
+  useInput((input) => {
     if (interactive && viewState === 'list' && input === 'q') {
       exit();
     }
