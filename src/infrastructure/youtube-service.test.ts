@@ -89,7 +89,7 @@ describe('YouTubeService', () => {
       // Console error mock to keep output clean
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => { });
+        .mockImplementation(() => {});
 
       const activities = await service.getActivities([creator]);
 
@@ -125,7 +125,7 @@ describe('YouTubeService', () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Error'));
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => { });
+        .mockImplementation(() => {});
 
       const info = await service.getChannelInfo('channel-id');
 

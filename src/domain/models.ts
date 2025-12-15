@@ -43,7 +43,6 @@ export interface Activity {
   views?: number;
 }
 
-
 export interface ScheduleEvent {
   /** イベントID */
   id: string;
