@@ -84,6 +84,11 @@ const WeeklyScheduleView: React.FC<WeeklyScheduleViewProps> = ({
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
+                      {event.endTime &&
+                        ` - ${event.endTime.toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}`}
                     </Text>
                     <Text
                       wrap="truncate-end"
@@ -94,7 +99,7 @@ const WeeklyScheduleView: React.FC<WeeklyScheduleViewProps> = ({
                           : event.author?.color || 'white'
                       }
                     >
-                      {event.title}
+                      {event.author?.name}
                     </Text>
                   </Box>
                 ))

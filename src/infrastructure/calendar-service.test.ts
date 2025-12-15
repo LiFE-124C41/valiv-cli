@@ -61,6 +61,15 @@ describe('CalendarService', () => {
           url: 'http://example.com/event2',
           description: 'Description 2',
         },
+        '3': {
+          type: 'VEVENT',
+          uid: '3',
+          summary: 'Ongoing Event',
+          start: new Date(new Date().getTime() - 1800000), // Started 30 mins ago
+          end: new Date(new Date().getTime() + 1800000),   // Ends in 30 mins
+          url: 'http://example.com/event3',
+          description: 'Description 3',
+        },
       };
 
       (ical.async.fromURL as unknown as Mock).mockResolvedValue(mockEvents);
@@ -70,8 +79,19 @@ describe('CalendarService', () => {
       expect(ical.async.fromURL).toHaveBeenCalledWith(
         'http://example.com/calendar.ics',
       );
-      expect(schedules).toHaveLength(1);
+      expect(schedules).toHaveLength(2);
       expect(schedules[0]).toEqual({
+        id: '3',
+        title: 'Ongoing Event',
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        url: 'http://example.com/event3',
+        description: 'Description 3',
+        platform: 'calendar',
+        author: creator,
+      });
+
+      expect(schedules[1]).toEqual({
         id: '1',
         title: 'Future Event',
         startTime: futureDate,
@@ -89,7 +109,7 @@ describe('CalendarService', () => {
       );
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const schedules = await service.getSchedules([creator]);
 
