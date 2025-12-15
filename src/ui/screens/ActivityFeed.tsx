@@ -335,10 +335,15 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedActivities = activities.slice(startIndex, endIndex);
 
-  const items = paginatedActivities.map((activity) => ({
-    label: `[${activity.author?.name}] ${activity.title} (${activity.timestamp.toLocaleDateString()})`,
-    value: activity.url,
-  }));
+  const items = paginatedActivities.map((activity) => {
+    const viewsText = activity.views
+      ? `${activity.views.toLocaleString()} views, `
+      : '';
+    return {
+      label: `[${activity.author?.name}] ${activity.title} (${viewsText}${activity.timestamp.toLocaleDateString()})`,
+      value: activity.url,
+    };
+  });
 
   if (endIndex < activities.length) {
     items.push({

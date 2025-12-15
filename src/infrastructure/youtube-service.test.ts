@@ -52,6 +52,13 @@ describe('YouTubeService', () => {
             title: 'Video 1',
             link: 'http://youtube.com/video1',
             pubDate: '2023-01-01T10:00:00Z',
+            media: {
+              'media:community': [
+                {
+                  'media:statistics': [{ $: { views: '1000' } }],
+                },
+              ],
+            },
           },
         ],
       };
@@ -72,6 +79,7 @@ describe('YouTubeService', () => {
         type: 'video',
         timestamp: new Date('2023-01-01T10:00:00Z'),
         author: creator,
+        views: 1000,
       });
     });
 
@@ -81,7 +89,7 @@ describe('YouTubeService', () => {
       // Console error mock to keep output clean
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const activities = await service.getActivities([creator]);
 
@@ -117,7 +125,7 @@ describe('YouTubeService', () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Error'));
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const info = await service.getChannelInfo('channel-id');
 

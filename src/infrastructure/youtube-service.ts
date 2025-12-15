@@ -6,7 +6,11 @@ export class YouTubeService implements IActivityService {
   private parser: Parser;
 
   constructor(private cacheRepo: ICacheRepository) {
-    this.parser = new Parser();
+    this.parser = new Parser({
+      customFields: {
+        item: [['media:group', 'media']],
+      },
+    });
   }
 
   async getActivities(
@@ -40,15 +44,27 @@ export class YouTubeService implements IActivityService {
             `https://www.youtube.com/feeds/videos.xml?channel_id=${creator.youtubeChannelId}`,
           );
 
-          return feed.items.map((item) => ({
-            id: item.id || item.link || '',
-            title: item.title || '',
-            url: item.link || '',
-            platform: 'youtube' as const,
-            type: 'video' as const, // RSS doesn't distinguish live/video easily
-            timestamp: new Date(item.pubDate || item.isoDate || Date.now()),
-            author: creator,
-          }));
+          return feed.items.map((item) => {
+            let views: number | undefined;
+            if (item['media'] && item['media']['media:community']) {
+              const statistics =
+                item['media']['media:community'][0]['media:statistics'];
+              if (statistics && statistics[0] && statistics[0]['$']) {
+                views = parseInt(statistics[0]['$']['views'], 10);
+              }
+            }
+
+            return {
+              id: item.id || item.link || '',
+              title: item.title || '',
+              url: item.link || '',
+              platform: 'youtube' as const,
+              type: 'video' as const, // RSS doesn't distinguish live/video easily
+              timestamp: new Date(item.pubDate || item.isoDate || Date.now()),
+              author: creator,
+              views,
+            };
+          });
         } catch (error) {
           console.error(
             `Failed to fetch YouTube feed for ${creator.name}:`,
