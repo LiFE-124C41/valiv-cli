@@ -3,7 +3,7 @@ import { Creator, ScheduleEvent } from '../domain/models.js';
 import { ICacheRepository, IScheduleService } from '../domain/interfaces.js';
 
 export class CalendarService implements IScheduleService {
-  constructor(private cacheRepo: ICacheRepository) { }
+  constructor(private cacheRepo: ICacheRepository) {}
 
   async getSchedules(
     creators: Creator[],
@@ -58,7 +58,9 @@ export class CalendarService implements IScheduleService {
                 author: creator,
               }))
               .filter((event) => {
-                const endTime = event.endTime ? new Date(event.endTime) : undefined;
+                const endTime = event.endTime
+                  ? new Date(event.endTime)
+                  : undefined;
                 if (endTime) {
                   return endTime > now;
                 }

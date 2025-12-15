@@ -66,7 +66,7 @@ describe('CalendarService', () => {
           uid: '3',
           summary: 'Ongoing Event',
           start: new Date(new Date().getTime() - 1800000), // Started 30 mins ago
-          end: new Date(new Date().getTime() + 1800000),   // Ends in 30 mins
+          end: new Date(new Date().getTime() + 1800000), // Ends in 30 mins
           url: 'http://example.com/event3',
           description: 'Description 3',
         },
@@ -109,7 +109,7 @@ describe('CalendarService', () => {
       );
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => { });
+        .mockImplementation(() => {});
 
       const schedules = await service.getSchedules([creator]);
 
