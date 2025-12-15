@@ -140,6 +140,11 @@ const ScheduleListScreen: React.FC<ScheduleListScreenProps> = ({
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
+                    {event.endTime &&
+                      ` - ${event.endTime.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}`}
                     ]
                   </Text>{' '}
                   <Text

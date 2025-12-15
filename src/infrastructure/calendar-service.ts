@@ -27,7 +27,12 @@ export class CalendarService implements IScheduleService {
             startTime: new Date(e.startTime),
             endTime: e.endTime ? new Date(e.endTime) : undefined,
           }))
-          .filter((event) => event.startTime >= now); // Re-filter for current time
+          .filter((event) => {
+            if (event.endTime) {
+              return event.endTime > now;
+            }
+            return event.startTime >= now;
+          }); // Re-filter for current time
       }
     }
 
@@ -52,8 +57,16 @@ export class CalendarService implements IScheduleService {
                 platform: 'calendar' as const,
                 author: creator,
               }))
-              .filter((event) => event.startTime >= now)
-          ); // Future events only
+              .filter((event) => {
+                const endTime = event.endTime
+                  ? new Date(event.endTime)
+                  : undefined;
+                if (endTime) {
+                  return endTime > now;
+                }
+                return event.startTime >= now;
+              }) // Future or ongoing events
+          );
         } catch (error) {
           console.error(`Failed to fetch Calendar for ${creator.name}:`, error);
           return [];
