@@ -66,7 +66,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const ITEMS_PER_PAGE = 10;
 
   useInput((input) => {
-    if (isPlayingAudio && input === 'q') {
+    if (input === 'q') {
       if (playerServiceRef.current) {
         playerServiceRef.current.stop();
       }
@@ -428,7 +428,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         Recent Activities (Page {page})
       </Text>
       <Text dimColor>
-        Select an activity to open in browser (or MPV if available):
+        Select an activity to open in browser (or MPV if available). Press 'q' to exit.
       </Text>
       <Box marginTop={1}>
         <SelectInput
