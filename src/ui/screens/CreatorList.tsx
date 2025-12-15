@@ -23,16 +23,20 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   disableColor,
 }) => {
   const { exit } = useApp();
-  const [creators, setCreators] = useState<Creator[]>([]);
+  const [creators, setCreators] = useState<Creator[]>(() =>
+    configRepo.getCreators(),
+  );
   const [viewState, setViewState] = useState<ViewState>('list');
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
 
   useEffect(() => {
-    setCreators(configRepo.getCreators());
-  }, [configRepo]);
+    if (!interactive) {
+      exit();
+    }
+  }, [interactive, exit]);
 
   useInput((input, key) => {
-    if (interactive && viewState === 'list' && key.escape) {
+    if (interactive && viewState === 'list' && input === 'q') {
       exit();
     }
   });
@@ -105,7 +109,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
             <SelectInput items={items} onSelect={handleSelectCreator} />
           </Box>
           <Box marginTop={1}>
-            <Text dimColor>Press Esc to exit</Text>
+            <Text dimColor>Press 'q' to exit</Text>
           </Box>
         </Box>
       );
