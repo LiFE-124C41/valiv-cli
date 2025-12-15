@@ -39,6 +39,8 @@ export interface Activity {
   description?: string;
   /** 活動を行ったクリエイター */
   author?: Creator;
+  /** 再生数 (RSSから取得) */
+  views?: number;
 }
 
 export interface ScheduleEvent {
