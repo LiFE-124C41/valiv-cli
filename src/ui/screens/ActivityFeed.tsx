@@ -203,9 +203,15 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       );
 
       // Filter the returned activities to only include those from targetCreators
-      const results = allActivities.filter((activity) =>
-        targetCreators.some((c) => c.id === activity.author?.id),
-      );
+      // AND exclude future contents (views === 0)
+      const results = allActivities.filter((activity) => {
+        const isTargetCreator = targetCreators.some(
+          (c) => c.id === activity.author?.id,
+        );
+        // views can be undefined, checking specifically for 0
+        const isNotFutureContent = activity.views !== 0;
+        return isTargetCreator && isNotFutureContent;
+      });
 
       setActivities(results);
       setLoading(false);
