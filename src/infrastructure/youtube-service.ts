@@ -15,6 +15,36 @@ interface YouTubeChannelResponse {
   items: YouTubeChannelItem[];
 }
 
+interface YouTubeSearchItem {
+  id: {
+    videoId: string;
+  };
+  snippet: {
+    title: string;
+    description: string;
+  };
+}
+
+interface YouTubeSearchResponse {
+  items: YouTubeSearchItem[];
+}
+
+interface YouTubeVideoItem {
+  id: string;
+  snippet: {
+    title: string;
+    channelId: string;
+  };
+  liveStreamingDetails?: {
+    scheduledStartTime?: string;
+    scheduledEndTime?: string;
+  };
+}
+
+interface YouTubeVideoResponse {
+  items: YouTubeVideoItem[];
+}
+
 export class YouTubeService implements IActivityService {
   private parser: Parser;
 
@@ -24,6 +54,68 @@ export class YouTubeService implements IActivityService {
         item: [['media:group', 'media']],
       },
     });
+  }
+
+  async getUpcomingStreams(
+    creators: Creator[],
+    apiKey: string,
+  ): Promise<import('../domain/models.js').ScheduleEvent[]> {
+    const promises = creators
+      .filter((c) => c.youtubeChannelId)
+      .map(async (creator) => {
+        try {
+          // 1. Search for upcoming videos
+          const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${creator.youtubeChannelId}&eventType=upcoming&type=video&key=${apiKey}`;
+          const searchRes = await fetch(searchUrl);
+          if (!searchRes.ok) return [];
+          const searchData = (await searchRes.json()) as YouTubeSearchResponse;
+
+          if (!searchData.items || searchData.items.length === 0) return [];
+
+          // 2. Get video details for scheduled time
+          const videoIds = searchData.items
+            .map((item) => item.id.videoId)
+            .join(',');
+          const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${apiKey}`;
+          const videosRes = await fetch(videosUrl);
+          if (!videosRes.ok) return [];
+          const videosData = (await videosRes.json()) as YouTubeVideoResponse;
+
+          if (!videosData.items) return [];
+
+          return videosData.items.map((video) => {
+            const startTime = video.liveStreamingDetails?.scheduledStartTime
+              ? new Date(video.liveStreamingDetails.scheduledStartTime)
+              : new Date();
+
+            const endTime = video.liveStreamingDetails?.scheduledEndTime
+              ? new Date(video.liveStreamingDetails.scheduledEndTime)
+              : undefined;
+
+            return {
+              id: video.id,
+              title: video.snippet.title,
+              startTime: startTime,
+              endTime: endTime,
+              url: `https://www.youtube.com/watch?v=${video.id}`,
+              platform: 'youtube' as const,
+              author: creator,
+              description: 'YouTube Scheduled Stream', // Description unavailable in search/video snippet usually truncated or needed specifically
+            };
+          });
+        } catch (error) {
+          console.error(
+            `Failed to fetch upcoming streams for ${creator.name}:`,
+            error,
+          );
+          return [];
+        }
+      });
+
+    const results = await Promise.all(promises);
+    return results
+      .flat()
+      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   }
 
   async getActivities(

@@ -42,7 +42,9 @@ const App: React.FC<AppProps> = ({
   const [configRepo] = useState(() => new ConfigRepository());
   const [cacheRepo] = useState(() => new CacheRepository());
   const [youtubeService] = useState(() => new YouTubeService(cacheRepo));
-  const [calendarService] = useState(() => new CalendarService(cacheRepo));
+  const [calendarService] = useState(
+    () => new CalendarService(cacheRepo, configRepo, youtubeService),
+  );
 
   // Navigation State
   const [currentScreen, setCurrentScreen] = useState<ScreenName>(
