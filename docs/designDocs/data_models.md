@@ -111,6 +111,7 @@ export interface Activity {
 }
 ```
 
+
 ### ScheduleEvent
 将来の予定を表します。
 
@@ -134,3 +135,16 @@ export interface ScheduleEvent {
   author?: Creator;
 }
 ```
+
+### ConfigSchema
+設定ファイルのスキーマ定義です。
+
+```typescript
+export interface ConfigSchema {
+  /** 登録済みクリエイターのリスト */
+  creators: Creator[];
+  /** YouTube Data API v3 Key (Optional) */
+  youtubeApiToken?: string;
+}
+```
+

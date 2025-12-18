@@ -4,6 +4,7 @@ import { IConfigRepository } from '../domain/interfaces.js';
 
 interface ConfigSchema {
   creators: Creator[];
+  youtubeApiToken?: string;
 }
 
 export class ConfigRepository implements IConfigRepository {
@@ -54,5 +55,13 @@ export class ConfigRepository implements IConfigRepository {
     const creators = this.getCreators();
     const newCreators = creators.filter((c) => c.id !== id);
     this.store.set('creators', newCreators);
+  }
+
+  getYoutubeApiToken(): string | undefined {
+    return this.store.get('youtubeApiToken');
+  }
+
+  saveYoutubeApiToken(token: string): void {
+    this.store.set('youtubeApiToken', token);
   }
 }

@@ -78,8 +78,10 @@ const App: React.FC<AppProps> = ({
       return (
         <CreatorListScreen
           configRepo={configRepo}
+          youtubeService={youtubeService}
           detail={detail}
           interactive={interactive}
+          refresh={refresh}
           onNavigate={navigate}
           disableColor={disableColor}
         />

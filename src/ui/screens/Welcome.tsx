@@ -4,7 +4,6 @@ import Spinner from 'ink-spinner';
 import { IConfigRepository } from '../../domain/interfaces.js';
 import { VALIV_MEMBERS } from '../../domain/constants.js';
 import { YouTubeService } from '../../infrastructure/youtube-service.js';
-import { Creator } from '../../domain/models.js';
 
 const getWelcomeMessage = () => {
   const art =
@@ -22,7 +21,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   youtubeService,
 }) => {
   const [loading, setLoading] = useState(true);
-  const [updatedMembers, setUpdatedMembers] = useState<Creator[]>([]);
+  const [updatedMembers, setUpdatedMembers] = useState<typeof VALIV_MEMBERS>(
+    [],
+  );
+  const [step, setStep] = useState<'init' | 'token' | 'done'>('init');
+  const [tokenInput, setTokenInput] = useState('');
+  const tokenInputRef = React.useRef(tokenInput);
+
+  useEffect(() => {
+    tokenInputRef.current = tokenInput;
+  }, [tokenInput]);
 
   useEffect(() => {
     const initializeMembers = async () => {
@@ -43,13 +51,31 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       configRepo.saveCreators(updated);
       setUpdatedMembers(updated);
       setLoading(false);
+      setStep('token'); // Move to token input step
     };
 
-    initializeMembers();
-  }, [configRepo, youtubeService]);
+    if (step === 'init') {
+      initializeMembers();
+    }
+  }, [configRepo, youtubeService, step]);
 
   useInput((input, key) => {
-    if (!loading && key.return) {
+    if (loading) return;
+
+    if (step === 'token') {
+      if (key.return) {
+        const currentInput = tokenInputRef.current;
+        if (currentInput.trim().length > 0) {
+          configRepo.saveYoutubeApiToken(currentInput.trim());
+        }
+        setStep('done');
+      } else if (key.backspace || key.delete) {
+        setTokenInput((prev) => prev.slice(0, -1));
+      } else if (input.length > 0) {
+        // Naive input handling, sufficient for basic CLI
+        setTokenInput((prev) => prev + input);
+      }
+    } else if (step === 'done' && key.return) {
       process.exit(0);
     }
   });
@@ -60,6 +86,33 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <Text color="green">
           <Spinner type="dots" /> Initializing members...
         </Text>
+      </Box>
+    );
+  }
+
+  if (step === 'token') {
+    return (
+      <Box
+        flexDirection="column"
+        padding={1}
+        borderStyle="round"
+        borderColor="cyan"
+      >
+        <Text bold color="cyan">
+          Setup YouTube API Token (Optional)
+        </Text>
+        <Box marginY={1}>
+          <Text>
+            To view subscriber counts, please enter your YouTube Data API v3
+            Key.
+          </Text>
+          <Text dimColor>(Press Enter to skip)</Text>
+        </Box>
+        <Box>
+          <Text>API Key: </Text>
+          <Text color="green">{tokenInput}</Text>
+          <Text dimColor>|</Text>
+        </Box>
       </Box>
     );
   }
@@ -87,6 +140,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </Text>
           ))}
         </Box>
+      </Box>
+      <Box marginTop={1}>
+        <Text>
+          {tokenInput
+            ? 'YouTube API Token configured!'
+            : 'YouTube API Token skipped.'}
+        </Text>
       </Box>
       <Box marginTop={1}>
         <Text>

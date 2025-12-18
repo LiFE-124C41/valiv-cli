@@ -43,6 +43,7 @@ program
   .description('List registered creators')
   .option('-d, --detail', 'Show detailed information')
   .option('-i, --interactive', 'Enable interactive mode')
+  .option('-r, --refresh', 'Force refresh data')
   .option('--no-color-creator', 'Disable creator colors')
   .action((options) => {
     render(
@@ -50,6 +51,7 @@ program
         command="list"
         detail={options.detail}
         interactive={options.interactive}
+        refresh={options.refresh}
         disableColor={!options.colorCreator}
       />,
     );

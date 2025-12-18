@@ -37,6 +37,9 @@ npm install
 最初に初期化を行い、設定ファイルを作成します。
 実行すると vα-liv メンバー（灯里愛夏、上水流宇宙、レトラ、公式）のデータが自動的に登録され、すぐに利用を開始できます。
 
+初期化プロセス中に **YouTube Data API v3 Key** (Token) の入力を求められます。
+Token を設定することで、`list` コマンドなどでチャンネル登録者数を表示できるようになります（スキップ可能）。
+
 ```bash
 valiv init
 ```
@@ -69,6 +72,8 @@ valiv list --detail
 valiv list --interactive
 
 ```
+
+*   **Tips**: `init` コマンドで YouTube API Token を設定している場合、チャンネル登録者数も併せて表示されます。
 
 ### 最新アクティビティの確認
 

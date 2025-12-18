@@ -31,4 +31,6 @@ export interface IConfigRepository {
   saveCreator(creator: Creator): void;
   saveCreators(creators: Creator[]): void;
   removeCreator(id: string): void;
+  getYoutubeApiToken(): string | undefined;
+  saveYoutubeApiToken(token: string): void;
 }
