@@ -24,7 +24,7 @@ describe('CalendarService', () => {
     getCreators: Mock;
     setCreators: Mock;
   };
-  let youtubeServiceMock: { getUpcomingStreams: Mock };
+  let youtubeServiceMock: { getUpcomingStreams: Mock; getLiveStreams: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -40,6 +40,7 @@ describe('CalendarService', () => {
     };
     youtubeServiceMock = {
       getUpcomingStreams: vi.fn().mockResolvedValue([]),
+      getLiveStreams: vi.fn().mockResolvedValue([]),
     };
     service = new CalendarService(
       cacheRepoMock as unknown as ICacheRepository,
@@ -121,7 +122,7 @@ describe('CalendarService', () => {
       );
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const schedules = await service.getSchedules([creator]);
 
@@ -244,6 +245,31 @@ describe('CalendarService', () => {
       expect(schedules).toHaveLength(2);
       const platforms = schedules.map((s) => s.platform).sort();
       expect(platforms).toEqual(['calendar', 'youtube']);
+    });
+
+    it('should include live streams from YouTube', async () => {
+      configRepoMock.getYoutubeApiToken.mockReturnValue('fake-token');
+
+      const liveEvent: ScheduleEvent = {
+        id: 'live-1',
+        title: 'Live Stream',
+        startTime: new Date(),
+        platform: 'youtube',
+        status: 'live',
+        author: creator,
+      };
+
+      youtubeServiceMock.getLiveStreams.mockResolvedValue([liveEvent]);
+
+      const schedules = await service.getSchedules([creator]);
+
+      expect(youtubeServiceMock.getLiveStreams).toHaveBeenCalledWith(
+        [creator],
+        'fake-token',
+      );
+      expect(schedules).toContainEqual(
+        expect.objectContaining({ id: 'live-1', status: 'live' }),
+      );
     });
   });
 });

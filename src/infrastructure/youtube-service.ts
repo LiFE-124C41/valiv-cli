@@ -118,6 +118,68 @@ export class YouTubeService implements IActivityService {
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   }
 
+  async getLiveStreams(
+    creators: Creator[],
+    apiKey: string,
+  ): Promise<import('../domain/models.js').ScheduleEvent[]> {
+    const promises = creators
+      .filter((c) => c.youtubeChannelId)
+      .map(async (creator) => {
+        try {
+          // 1. Search for live videos
+          const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${creator.youtubeChannelId}&eventType=live&type=video&key=${apiKey}`;
+          const searchRes = await fetch(searchUrl);
+          if (!searchRes.ok) return [];
+          const searchData = (await searchRes.json()) as YouTubeSearchResponse;
+
+          if (!searchData.items || searchData.items.length === 0) return [];
+
+          // 2. Get video details for concurrent viewers
+          const videoIds = searchData.items
+            .map((item) => item.id.videoId)
+            .join(',');
+          const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails,statistics&id=${videoIds}&key=${apiKey}`;
+          const videosRes = await fetch(videosUrl);
+          if (!videosRes.ok) return [];
+          const videosData = (await videosRes.json()) as any; // Type assertion needed or update interface
+
+          if (!videosData.items) return [];
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return videosData.items.map((video: any) => {
+            return {
+              id: video.id,
+              title: video.snippet.title,
+              startTime: new Date(
+                video.liveStreamingDetails?.actualStartTime ||
+                video.liveStreamingDetails?.scheduledStartTime ||
+                Date.now(),
+              ),
+              url: `https://www.youtube.com/watch?v=${video.id}`,
+              platform: 'youtube' as const,
+              author: creator,
+              description: 'YouTube Live Stream',
+              status: 'live' as const,
+              concurrentViewers:
+                video.liveStreamingDetails?.concurrentViewers || '0',
+              likeCount: video.statistics?.likeCount || '0',
+            };
+          });
+        } catch (error) {
+          console.error(
+            `Failed to fetch live streams for ${creator.name}:`,
+            error,
+          );
+          return [];
+        }
+      });
+
+    const results = await Promise.all(promises);
+    return results
+      .flat()
+      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+  }
+
   async getActivities(
     creators: Creator[],
     forceRefresh = false,

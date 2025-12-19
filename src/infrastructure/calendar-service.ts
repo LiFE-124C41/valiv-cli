@@ -12,7 +12,7 @@ export class CalendarService implements IScheduleService {
     private cacheRepo: ICacheRepository,
     private configRepo: IConfigRepository,
     private youtubeService: YouTubeService,
-  ) {}
+  ) { }
 
   async getSchedules(
     creators: Creator[],
@@ -61,6 +61,13 @@ export class CalendarService implements IScheduleService {
       const oneMonthLater = new Date();
       oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
       youtubeEvents = youtubeEvents.filter((e) => e.startTime <= oneMonthLater);
+
+      // Also get live streams
+      const liveEvents = await this.youtubeService.getLiveStreams(
+        creators,
+        apiKey,
+      );
+      youtubeEvents = [...liveEvents, ...youtubeEvents];
     }
 
     // 2. Fetch from iCal (Always fetch all future events first, then dedup)

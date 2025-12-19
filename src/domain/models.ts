@@ -60,4 +60,10 @@ export interface ScheduleEvent {
   platform: Platform;
   /** イベントの作成者 */
   author?: Creator;
+  /** ステータス (upcoming | live) */
+  status?: 'upcoming' | 'live';
+  /** 同時視聴者数 (liveの場合のみ) */
+  concurrentViewers?: string;
+  /** 高評価数 (liveの場合のみ) */
+  likeCount?: string;
 }
