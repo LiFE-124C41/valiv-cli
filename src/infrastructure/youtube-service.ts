@@ -2,8 +2,10 @@ import Parser from 'rss-parser';
 import { Activity, Creator } from '../domain/models.js';
 import { IActivityService, ICacheRepository } from '../domain/interfaces.js';
 
-interface YouTubeChannelStatistics {
+export interface YouTubeChannelStatistics {
   subscriberCount: string;
+  viewCount: string;
+  videoCount: string;
 }
 
 interface YouTubeChannelItem {
@@ -272,17 +274,19 @@ export class YouTubeService implements IActivityService {
     // but getSubscriberCounts should be preferred.
     // implementation omitted or kept as wrapper
     const result = await this.getSubscriberCounts([channelId], apiKey);
-    const count = result[channelId];
-    return count ? { subscriberCount: count } : null;
+    const stats = result[channelId];
+    return stats ? { subscriberCount: stats.subscriberCount } : null;
   }
 
   async getSubscriberCounts(
     channelIds: string[],
     apiKey: string,
     forceRefresh = false,
-  ): Promise<Record<string, string>> {
-    const cacheKey = 'youtube_subscriber_counts';
-    const cached = this.cacheRepo.get<Record<string, string>>(cacheKey);
+  ): Promise<Record<string, YouTubeChannelStatistics>> {
+    const cacheKey = 'youtube_channel_statistics';
+    const cached = this.cacheRepo.get<Record<string, YouTubeChannelStatistics>>(
+      cacheKey,
+    );
     const now = new Date();
     const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -309,14 +313,18 @@ export class YouTubeService implements IActivityService {
       }
 
       const data = (await response.json()) as YouTubeChannelResponse;
-      const result: Record<string, string> = {};
+      const result: Record<string, YouTubeChannelStatistics> = {};
 
       if (data.items) {
         for (const item of data.items) {
           // item.id is needed to map back, but YouTubeChannelResponse/Item definition needs 'id'
           // We need to update the interface to include 'id'
-          if (item.id && item.statistics && item.statistics.subscriberCount) {
-            result[item.id] = item.statistics.subscriberCount;
+          if (item.id && item.statistics) {
+            result[item.id] = {
+              subscriberCount: item.statistics.subscriberCount,
+              viewCount: item.statistics.viewCount,
+              videoCount: item.statistics.videoCount,
+            };
           }
         }
       }
