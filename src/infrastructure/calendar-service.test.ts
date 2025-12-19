@@ -141,7 +141,7 @@ describe('CalendarService', () => {
       expect(schedules).toHaveLength(0);
     });
 
-    it('should dedup events if they overlap with YouTube streams from the SAME creator', async () => {
+    it('should dedup events if they overlap with YouTube streams from the SAME creator and update end time', async () => {
       configRepoMock.getYoutubeApiToken.mockReturnValue('fake-token');
 
       const futureDate = new Date();
@@ -149,8 +149,8 @@ describe('CalendarService', () => {
       futureDate.setHours(20, 0, 0, 0); // 20:00
 
       // iCal event: 20:00 - 22:30
-      // YouTube event: 22:00 - 0:00
-      // Overlap exists.
+      // Expected End Time: 22:30
+      const expectedEndTime = new Date(futureDate.getTime() + 2.5 * 3600000);
 
       const mockEvents = {
         '1': {
@@ -158,7 +158,7 @@ describe('CalendarService', () => {
           uid: 'ical-1',
           summary: 'Stream Placeholder',
           start: futureDate,
-          end: new Date(futureDate.getTime() + 2.5 * 3600000), // +2.5h (22:30)
+          end: expectedEndTime,
           url: '',
           description: '',
         },
@@ -173,7 +173,7 @@ describe('CalendarService', () => {
         id: 'yt-1',
         title: 'Actual Stream',
         startTime: ytStartTime,
-        endTime: new Date(ytStartTime.getTime() + 2 * 3600000), // 0:00
+        endTime: undefined, // YouTube API might not return end time yet
         platform: 'youtube',
         author: creator, // SAME CREATOR
       };
@@ -186,6 +186,9 @@ describe('CalendarService', () => {
       expect(schedules).toHaveLength(1);
       expect(schedules[0].id).toBe('yt-1');
       expect(schedules[0].platform).toBe('youtube');
+
+      // End time should be updated from iCal
+      expect(schedules[0].endTime).toEqual(expectedEndTime);
     });
 
     it('should NOT dedup events if they overlap with YouTube streams from DIFFERENT creators', async () => {

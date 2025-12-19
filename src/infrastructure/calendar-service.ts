@@ -115,7 +115,7 @@ export class CalendarService implements IScheduleService {
       // If it overlaps with a YouTube event, discard it (YouTube takes precedence).
       // Overlap condition: iCal.start <= YouTube.start <= iCal.end
       for (const event of iCalEvents) {
-        const isDuplicate = youtubeEvents.some((ytEvent) => {
+        const matchingYtEvent = youtubeEvents.find((ytEvent) => {
           // We need to compare strict times.
           // Note: iCal events usually have endTime. If not, we might assume 1 hour duration or just check start time match.
           // User request: "ical start <= yt start <= ical end" (inclusive/between)
@@ -136,7 +136,12 @@ export class CalendarService implements IScheduleService {
           );
         });
 
-        if (!isDuplicate) {
+        if (matchingYtEvent) {
+          // Update endTime from iCal if available (overwrite API data as requested)
+          if (event.endTime) {
+            matchingYtEvent.endTime = event.endTime;
+          }
+        } else {
           schedules.push(event);
         }
       }
