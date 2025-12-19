@@ -9,6 +9,10 @@ vi.mock('conf', () => {
   ConfMock.prototype.get = vi.fn();
   ConfMock.prototype.set = vi.fn();
   ConfMock.prototype.delete = vi.fn();
+  // Mock path property
+  Object.defineProperty(ConfMock.prototype, 'path', {
+    get: () => '/mock/path/config.json',
+  });
   return { default: ConfMock };
 });
 
@@ -26,7 +30,7 @@ describe('ConfigRepository', () => {
 
   describe('getCreators', () => {
     it('should return empty array when no creators saved', () => {
-      confInstance.get.mockReturnValue([]);
+      confInstance.get.mockReturnValue(undefined);
       const creators = repository.getCreators();
       expect(creators).toEqual([]);
       expect(confInstance.get).toHaveBeenCalledWith('creators');
@@ -116,6 +120,12 @@ describe('ConfigRepository', () => {
       repository.removeCreator('2');
 
       expect(confInstance.set).toHaveBeenCalledWith('creators', creators);
+    });
+  });
+
+  describe('getPath', () => {
+    it('should return config path', () => {
+      expect(repository.getPath()).toBe('/mock/path/config.json');
     });
   });
 });

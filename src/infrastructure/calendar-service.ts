@@ -40,10 +40,16 @@ export class CalendarService implements IScheduleService {
             endTime: e.endTime ? new Date(e.endTime) : undefined,
           }))
           .filter((event) => {
+            // Consistent filtering logic with fresh fetch
+            if (event.status === 'live') return true;
+
             if (event.endTime) {
               return event.endTime > now;
             }
-            return event.startTime >= now;
+            // Allow events that started recently (within last 3 hours) even if "past"
+            // This handles late starts or short streams where API hasn't updated status yet
+            const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+            return event.startTime >= threeHoursAgo;
           });
       }
     }
@@ -93,15 +99,19 @@ export class CalendarService implements IScheduleService {
                 author: creator,
               }))
               .filter((event) => {
-                // Time filter
+                // Relaxed Time filter for merging purposes
+                // We need past events to merge endTime into YouTube events
+                // Keep events from the last 24 hours so we can correctly filter finished streams
+                const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
                 const endTime = event.endTime
                   ? new Date(event.endTime)
                   : undefined;
-                const isFuture = endTime
-                  ? endTime > now
-                  : event.startTime >= now;
 
-                return isFuture;
+                if (endTime) {
+                  return endTime > oneDayAgo;
+                }
+                return event.startTime > oneDayAgo;
               })
           );
         } catch (error) {
@@ -156,6 +166,25 @@ export class CalendarService implements IScheduleService {
       // If not using API, just use all iCal events
       schedules = iCalEvents;
     }
+
+    // Final filter to ensure no past events are returned
+    // (Especially important after merging end times from iCal)
+    schedules = schedules.filter((event) => {
+      // Always show live events
+      if (event.status === 'live') return true;
+
+      // If we have an end time, strictly check if it's in the future
+      if (event.endTime) {
+        return event.endTime > now;
+      }
+
+      // If no end time (e.g. pure YouTube event without iCal match),
+      // we usually keep it as it might be a late start.
+      // However, if it started more than 3 hours ago, it's likely a flawed "upcoming" or finished stream.
+      // (User reported case: 4 hours past start still showing. 3 hours should fix it while allowing late starts)
+      const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+      return event.startTime >= threeHoursAgo;
+    });
 
     schedules.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
 

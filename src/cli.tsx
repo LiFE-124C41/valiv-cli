@@ -19,8 +19,9 @@ program
 program
   .command('init')
   .description('Initialize valiv-cli')
-  .action(() => {
-    render(<App command="init" />);
+  .option('-C, --clean', 'Clean existing configuration and cache')
+  .action((options) => {
+    render(<App command="init" clean={options.clean} />);
   });
 
 program

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text } from 'ink';
+import { Text, useInput, useApp } from 'ink';
 import { ConfigRepository } from '../infrastructure/config-repository.js';
 import { CacheRepository } from '../infrastructure/cache-repository.js';
 import { YouTubeService } from '../infrastructure/youtube-service.js';
@@ -22,6 +22,7 @@ interface AppProps {
   refresh?: boolean;
   week?: boolean;
   disableColor?: boolean;
+  clean?: boolean;
 }
 
 type ScreenName = 'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule';
@@ -37,6 +38,7 @@ const App: React.FC<AppProps> = ({
   refresh,
   week,
   disableColor,
+  clean,
 }) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
@@ -58,6 +60,95 @@ const App: React.FC<AppProps> = ({
     setCurrentScreen(screen);
     setScreenProps(props);
   };
+
+  // Clean Logic State
+  const [cleanConfirmed, setCleanConfirmed] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
+  const [cleanError, setCleanError] = useState<string | null>(null);
+  const { exit } = useApp();
+
+  useInput((input, key) => {
+    if (command === 'init' && clean && !cleanConfirmed && !isCleaning) {
+      if (input === 'y' || input === 'Y') {
+        setCleanConfirmed(true);
+        performClean();
+      } else if (input === 'n' || input === 'N' || key.escape) {
+        exit();
+      }
+    }
+  });
+
+  const performClean = async () => {
+    setIsCleaning(true);
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+
+      const configPath = configRepo.getPath();
+      const cachePath = cacheRepo.getPath();
+
+      const configDir = path.dirname(configPath);
+      const cacheDir = path.dirname(cachePath);
+
+      // Explicit paths requested by user
+      const appData = process.env.APPDATA || process.env.HOME || '';
+      const explicitNodeJsConfig = path.join(appData, 'valiv-cli-nodejs');
+      const explicitNodeJsCache = path.join(appData, 'valiv-cli-cache-nodejs');
+
+      const pathsToDelete = [
+        configDir,
+        cacheDir,
+        explicitNodeJsConfig,
+        explicitNodeJsCache,
+      ];
+
+      // Deduplicate paths
+      const uniquePaths = [...new Set(pathsToDelete)];
+
+      for (const p of uniquePaths) {
+        try {
+          await fs.rm(p, { recursive: true, force: true });
+        } catch {
+          // Ignore errors if path doesn't exist
+        }
+      }
+
+      // Re-initialize repositories after cleaning to ensure fresh state if we were to continue (though we force exit or strictly init)
+      // Actually, since we deleted the files, the current instances in memory are "stale" but they are just wrappers around 'conf'.
+      // 'conf' might hold onto values in memory.
+      // Since 'init' screen creates fresh setup usually, it should be fine.
+
+      setIsCleaning(false);
+    } catch (e) {
+      setCleanError(e instanceof Error ? e.message : 'Unknown error');
+      setIsCleaning(false);
+    }
+  };
+
+  if (command === 'init' && clean && !cleanConfirmed) {
+    return (
+      <Text>
+        <Text color="red" bold>
+          WARNING: You are about to delete all valiv-cli configuration and cache
+          data.
+        </Text>
+        {'\n'}
+        <Text>
+          This includes all registered creators and your YouTube API token.
+        </Text>
+        {'\n'}
+        <Text bold>Are you sure you want to proceed? (y/N): </Text>
+      </Text>
+    );
+  }
+
+  if (command === 'init' && clean && isCleaning) {
+    return <Text color="yellow">Cleaning up...</Text>;
+  }
+
+  if (command === 'init' && clean && cleanError) {
+    return <Text color="red">Error cleaning up: {cleanError}</Text>;
+  }
 
   switch (currentScreen) {
     case 'init':

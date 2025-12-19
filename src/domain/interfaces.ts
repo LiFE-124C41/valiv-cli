@@ -9,6 +9,7 @@ export interface ICacheRepository {
   get<T>(key: string): { data: T; timestamp: number } | null;
   set<T>(key: string, data: T): void;
   clear(key: string): void;
+  getPath(): string;
 }
 
 export interface IActivityService {
@@ -34,4 +35,5 @@ export interface IConfigRepository {
   removeCreator(id: string): void;
   getYoutubeApiToken(): string | undefined;
   saveYoutubeApiToken(token: string): void;
+  getPath(): string;
 }

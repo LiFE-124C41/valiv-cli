@@ -20,7 +20,7 @@ export class ConfigRepository implements IConfigRepository {
   }
 
   getCreators(): Creator[] {
-    return this.store.get('creators');
+    return this.store.get('creators') || [];
   }
 
   saveCreator(creator: Creator): void {
@@ -63,5 +63,9 @@ export class ConfigRepository implements IConfigRepository {
 
   saveYoutubeApiToken(token: string): void {
     this.store.set('youtubeApiToken', token);
+  }
+
+  getPath(): string {
+    return this.store.path;
   }
 }
