@@ -80,6 +80,7 @@ describe('YouTubeService', () => {
         timestamp: new Date('2023-01-01T10:00:00Z'),
         author: creator,
         views: 1000,
+        status: 'video',
       });
     });
 

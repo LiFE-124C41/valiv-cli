@@ -12,7 +12,7 @@ export class CalendarService implements IScheduleService {
     private cacheRepo: ICacheRepository,
     private configRepo: IConfigRepository,
     private youtubeService: YouTubeService,
-  ) { }
+  ) {}
 
   async getSchedules(
     creators: Creator[],

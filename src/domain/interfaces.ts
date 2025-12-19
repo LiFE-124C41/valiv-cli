@@ -15,6 +15,7 @@ export interface IActivityService {
   getActivities(
     creators: Creator[],
     forceRefresh?: boolean,
+    apiKey?: string,
   ): Promise<Activity[]>;
   getChannelInfo(channelId: string): Promise<{ title: string } | null>;
 }

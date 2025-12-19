@@ -36,10 +36,18 @@ interface YouTubeVideoItem {
   snippet: {
     title: string;
     channelId: string;
+    liveBroadcastContent?: string;
   };
   liveStreamingDetails?: {
     scheduledStartTime?: string;
     scheduledEndTime?: string;
+    actualStartTime?: string;
+    actualEndTime?: string;
+    concurrentViewers?: string;
+  };
+  statistics?: {
+    viewCount?: string;
+    likeCount?: string;
   };
 }
 
@@ -143,19 +151,18 @@ export class YouTubeService implements IActivityService {
           const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails,statistics&id=${videoIds}&key=${apiKey}`;
           const videosRes = await fetch(videosUrl);
           if (!videosRes.ok) return [];
-          const videosData = (await videosRes.json()) as any; // Type assertion needed or update interface
+          const videosData = (await videosRes.json()) as YouTubeVideoResponse;
 
           if (!videosData.items) return [];
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return videosData.items.map((video: any) => {
+          return videosData.items.map((video) => {
             return {
               id: video.id,
               title: video.snippet.title,
               startTime: new Date(
                 video.liveStreamingDetails?.actualStartTime ||
-                video.liveStreamingDetails?.scheduledStartTime ||
-                Date.now(),
+                  video.liveStreamingDetails?.scheduledStartTime ||
+                  Date.now(),
               ),
               url: `https://www.youtube.com/watch?v=${video.id}`,
               platform: 'youtube' as const,
@@ -185,6 +192,7 @@ export class YouTubeService implements IActivityService {
   async getActivities(
     creators: Creator[],
     forceRefresh = false,
+    apiKey?: string,
   ): Promise<Activity[]> {
     const cacheKey = 'youtube_activities';
     const cached = this.cacheRepo.get<Activity[]>(cacheKey);
@@ -192,6 +200,10 @@ export class YouTubeService implements IActivityService {
 
     if (!forceRefresh && cached) {
       const cacheDate = new Date(cached.timestamp);
+      // Determine invalidation rule:
+      // If cached data has API enrichment (checked by checking if any item has 'status'),
+      // we might want to refresh more often (e.g., to update live status/viewers).
+      // For now, keeping simple daily cache but handling "refresh" flag is key.
       if (
         cacheDate.getDate() === now.getDate() &&
         cacheDate.getMonth() === now.getMonth() &&
@@ -232,7 +244,8 @@ export class YouTubeService implements IActivityService {
               timestamp: new Date(item.pubDate || item.isoDate || Date.now()),
               author: creator,
               views,
-            };
+              status: 'video' as const,
+            } as Activity;
           });
         } catch (error) {
           console.error(
@@ -244,12 +257,109 @@ export class YouTubeService implements IActivityService {
       });
 
     const results = await Promise.all(promises);
-    const activities = results
+    let activities = results
       .flat()
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
+    // Enrich with API if available
+    if (apiKey && activities.length > 0) {
+      activities = await this.enrichActivitiesWithApi(activities, apiKey);
+      // Re-sort because timestamps might have changed
+      activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    }
+
     this.cacheRepo.set(cacheKey, activities);
     return activities;
+  }
+
+  private async enrichActivitiesWithApi(
+    activities: Activity[],
+    apiKey: string,
+  ): Promise<Activity[]> {
+    try {
+      // Chunk IDs (max 50)
+      const videoIds = activities.map((a) => a.id.replace('yt:video:', '')); // RSS often has "yt:video:ID"
+      const uniqueIds = [...new Set(videoIds)];
+
+      const chunkSize = 50;
+      const chunks = [];
+      for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+        chunks.push(uniqueIds.slice(i, i + chunkSize));
+      }
+
+      const enrichedMap = new Map<string, Partial<Activity>>();
+
+      for (const chunk of chunks) {
+        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails,statistics,snippet&id=${chunk.join(',')}&key=${apiKey}`;
+        const res = await fetch(videosUrl);
+        if (!res.ok) continue;
+        const data = (await res.json()) as YouTubeVideoResponse;
+
+        if (data.items) {
+          for (const item of data.items) {
+            const stats = item.statistics;
+            const liveDetails = item.liveStreamingDetails;
+            const snippet = item.snippet;
+
+            let status: 'live' | 'upcoming' | 'video' = 'video';
+            if (liveDetails) {
+              if (liveDetails.actualStartTime && !liveDetails.actualEndTime) {
+                status = 'live';
+              } else if (
+                liveDetails.scheduledStartTime &&
+                !liveDetails.actualStartTime
+              ) {
+                status = 'upcoming';
+              }
+            }
+
+            // If snippet.liveBroadcastContent says 'live', trust it
+            if (snippet?.liveBroadcastContent === 'live') {
+              status = 'live';
+            } else if (snippet?.liveBroadcastContent === 'upcoming') {
+              status = 'upcoming';
+            }
+
+            let newTimestamp: Date | undefined;
+            if (liveDetails) {
+              if (liveDetails.actualStartTime) {
+                newTimestamp = new Date(liveDetails.actualStartTime);
+              } else if (liveDetails.scheduledStartTime) {
+                newTimestamp = new Date(liveDetails.scheduledStartTime);
+              }
+            }
+
+            enrichedMap.set(item.id, {
+              views: stats?.viewCount
+                ? parseInt(stats.viewCount, 10)
+                : undefined,
+              status,
+              concurrentViewers: liveDetails?.concurrentViewers,
+              likeCount: stats?.likeCount,
+              timestamp: newTimestamp,
+            });
+          }
+        }
+      }
+
+      return activities.map((activity) => {
+        const videoId = activity.id.replace('yt:video:', '');
+        const enrichment = enrichedMap.get(videoId);
+        if (enrichment) {
+          return {
+            ...activity,
+            ...enrichment,
+            // If API provided a timestamp (actual/scheduled start), use it.
+            // Otherwise fall back to original RSS timestamp.
+            timestamp: enrichment.timestamp || activity.timestamp,
+          };
+        }
+        return activity;
+      });
+    } catch (error) {
+      console.error('Failed to enrich activities with API:', error);
+      return activities;
+    }
   }
 
   async getChannelInfo(channelId: string): Promise<{ title: string } | null> {
@@ -284,9 +394,8 @@ export class YouTubeService implements IActivityService {
     forceRefresh = false,
   ): Promise<Record<string, YouTubeChannelStatistics>> {
     const cacheKey = 'youtube_channel_statistics';
-    const cached = this.cacheRepo.get<Record<string, YouTubeChannelStatistics>>(
-      cacheKey,
-    );
+    const cached =
+      this.cacheRepo.get<Record<string, YouTubeChannelStatistics>>(cacheKey);
     const now = new Date();
     const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 

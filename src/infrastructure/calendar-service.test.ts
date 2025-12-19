@@ -122,7 +122,7 @@ describe('CalendarService', () => {
       );
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => { });
+        .mockImplementation(() => {});
 
       const schedules = await service.getSchedules([creator]);
 

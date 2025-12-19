@@ -200,17 +200,23 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       const allActivities = await youtubeService.getActivities(
         allCreators,
         refresh,
+        configRepo.getYoutubeApiToken(), // Pass API Token
       );
 
       // Filter the returned activities to only include those from targetCreators
-      // AND exclude future contents (views === 0)
+      // AND exclude future contents (views === 0) UNLESS it is live
       const results = allActivities.filter((activity) => {
         const isTargetCreator = targetCreators.some(
           (c) => c.id === activity.author?.id,
         );
-        // views can be undefined, checking specifically for 0
-        const isNotFutureContent = activity.views !== 0;
-        return isTargetCreator && isNotFutureContent;
+        // views can be undefined, checking specifically for 0.
+        // If status is 'live', we always show it.
+        // If status is 'upcoming', we hide it (as check is for recent activity, and schedule is for upcoming).
+        const isLive = activity.status === 'live';
+        const isUpcoming = activity.status === 'upcoming';
+        const hasViews = activity.views !== 0;
+
+        return isTargetCreator && (isLive || (hasViews && !isUpcoming));
       });
 
       setActivities(results);
@@ -342,11 +348,26 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   const paginatedActivities = activities.slice(startIndex, endIndex);
 
   const items = paginatedActivities.map((activity) => {
-    const viewsText = activity.views
-      ? `${activity.views.toLocaleString()} views, `
-      : '';
+    let detailsText = '';
+    if (activity.status === 'live') {
+      const viewers = activity.concurrentViewers
+        ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
+        : 'Live';
+      const likes = activity.likeCount
+        ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+        : '';
+      detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
+    } else {
+      const likes = activity.likeCount
+        ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+        : '';
+      detailsText = activity.views
+        ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
+        : ` (${activity.timestamp.toLocaleDateString()})`;
+    }
+
     return {
-      label: `[${activity.author?.name}] ${activity.title} (${viewsText}${activity.timestamp.toLocaleDateString()})`,
+      label: `[${activity.author?.name}] ${activity.title}${detailsText}`,
       value: activity.url,
     };
   });
