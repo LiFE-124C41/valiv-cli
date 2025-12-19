@@ -5,6 +5,7 @@ import Spinner from 'ink-spinner';
 import { IConfigRepository } from '../../domain/interfaces.js';
 import { Creator } from '../../domain/models.js';
 import { YouTubeService } from '../../infrastructure/youtube-service.js';
+import { formatSubscriberCount } from '../../utils/stringUtils.js';
 import open from 'open';
 
 interface CreatorListScreenProps {
@@ -74,7 +75,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
           // Map back to creator IDs using channel ID
           const creator = creators.find((c) => c.youtubeChannelId === id);
           if (creator) {
-            formattedCounts[creator.id] = abbreviateNumber(parseInt(count, 10));
+            formattedCounts[creator.id] = formatSubscriberCount(count, detail);
           }
         }
 
@@ -220,68 +221,60 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
       <Box marginTop={1} flexDirection="column">
         {detail
           ? // Detailed View
-            creators.map((creator) => (
-              <Box key={creator.id} flexDirection="column" marginBottom={1}>
-                <Text
-                  bold
-                  color={disableColor ? 'green' : creator.color || 'green'}
-                >
-                  {creator.symbol ? `${creator.symbol} ` : ''}
-                  {creator.name}
-                  {subscriberCounts[creator.id] && (
-                    <Text color="yellow">
-                      {' '}
-                      ({subscriberCounts[creator.id]} Subs)
-                    </Text>
-                  )}
-                </Text>
-                <Box marginLeft={2} flexDirection="column">
-                  <Text>ID: {creator.id}</Text>
-                  {creator.youtubeChannelId && (
-                    <Text>YouTube: {creator.youtubeChannelId}</Text>
-                  )}
-                  {creator.twitchChannelId && (
-                    <Text>Twitch: {creator.twitchChannelId}</Text>
-                  )}
-                  {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
-                  {creator.calendarUrl && <Text>Calendar: Registered</Text>}
-                </Box>
-              </Box>
-            ))
-          : // Simple View
-            creators.map((creator) => (
-              <Box key={creator.id}>
-                <Text
-                  bold
-                  color={disableColor ? 'green' : creator.color || 'green'}
-                >
-                  {creator.symbol ? `${creator.symbol} ` : ''}
-                  {creator.name}
-                </Text>
+          creators.map((creator) => (
+            <Box key={creator.id} flexDirection="column" marginBottom={1}>
+              <Text
+                bold
+                color={disableColor ? 'green' : creator.color || 'green'}
+              >
+                {creator.symbol ? `${creator.symbol} ` : ''}
+                {creator.name}
                 {subscriberCounts[creator.id] && (
-                  <Text color="yellow"> [{subscriberCounts[creator.id]}]</Text>
+                  <Text color="yellow">
+                    {' '}
+                    ({subscriberCounts[creator.id]} Subscribers)
+                  </Text>
                 )}
-                <Text> - </Text>
-                <Text dimColor>
-                  {creator.youtubeChannelId ? 'YT ' : ''}
-                  {creator.calendarUrl ? 'Cal ' : ''}
-                </Text>
+              </Text>
+              <Box marginLeft={2} flexDirection="column">
+                <Text>ID: {creator.id}</Text>
+                {creator.youtubeChannelId && (
+                  <Text>YouTube: {creator.youtubeChannelId}</Text>
+                )}
+                {creator.twitchChannelId && (
+                  <Text>Twitch: {creator.twitchChannelId}</Text>
+                )}
+                {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
+                {creator.calendarUrl && <Text>Calendar: Registered</Text>}
               </Box>
-            ))}
+            </Box>
+          ))
+          : // Simple View
+          creators.map((creator) => (
+            <Box key={creator.id}>
+              <Text
+                bold
+                color={disableColor ? 'green' : creator.color || 'green'}
+              >
+                {creator.symbol ? `${creator.symbol} ` : ''}
+                {creator.name}
+              </Text>
+              {subscriberCounts[creator.id] && (
+                <Text color="yellow"> [{subscriberCounts[creator.id]}]</Text>
+              )}
+              <Text> - </Text>
+              <Text dimColor>
+                {creator.youtubeChannelId ? 'YT ' : ''}
+                {creator.calendarUrl ? 'Cal ' : ''}
+              </Text>
+            </Box>
+          ))}
       </Box>
     </Box>
   );
 };
 
 // Helper for formatting large numbers
-function abbreviateNumber(value: number): string {
-  if (value >= 1000000) {
-    return (value / 1000000).toFixed(2) + 'M';
-  }
-  if (value >= 1000) {
-    return (value / 1000).toFixed(1) + 'K';
-  }
-  return value.toString();
-}
+
 
 export default CreatorListScreen;

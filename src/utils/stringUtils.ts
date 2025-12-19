@@ -41,3 +41,22 @@ export const stripHtml = (html: string): string => {
 
   return processed;
 };
+
+export const abbreviateNumber = (value: number): string => {
+  if (value >= 1000000) {
+    return (value / 1000000).toFixed(2) + 'M';
+  }
+  if (value >= 1000) {
+    return (value / 1000).toFixed(1) + 'K';
+  }
+  return value.toString();
+};
+
+export const formatSubscriberCount = (
+  count: string,
+  detail?: boolean,
+): string => {
+  const num = parseInt(count, 10);
+  if (isNaN(num)) return count;
+  return detail ? num.toLocaleString() : abbreviateNumber(num);
+};
