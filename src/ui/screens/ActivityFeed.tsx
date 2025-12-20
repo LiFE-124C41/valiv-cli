@@ -426,26 +426,26 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     const authorColor = disableColor
       ? 'green'
       : activity?.author?.color || 'green';
-    
+
     // Construct details text again here since we are not parsing label anymore
     let detailsText = '';
     if (activity) {
-        if (activity.status === 'live') {
-          const viewers = activity.concurrentViewers
-            ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
-            : 'Live';
-          const likes = activity.likeCount
-            ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
-            : '';
-          detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
-        } else {
-          const likes = activity.likeCount
-            ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
-            : '';
-          detailsText = activity.views
-            ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
-            : ` (${activity.timestamp.toLocaleDateString()})`;
-        }
+      if (activity.status === 'live') {
+        const viewers = activity.concurrentViewers
+          ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
+          : 'Live';
+        const likes = activity.likeCount
+          ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+          : '';
+        detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
+      } else {
+        const likes = activity.likeCount
+          ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+          : '';
+        detailsText = activity.views
+          ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
+          : ` (${activity.timestamp.toLocaleDateString()})`;
+      }
     }
 
     const symbol = activity?.author?.symbol ? `${activity.author.symbol} ` : '';
@@ -454,15 +454,17 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     return (
       <Box flexDirection="column" marginLeft={1}>
         <Box>
-            <Text color="blue">{isSelected ? '> ' : '  '}</Text>
-            <Text color={authorColor} bold>
-                {symbol}{authorName}
-            </Text>
+          <Text color="blue">{isSelected ? '> ' : '  '}</Text>
+          <Text color={authorColor} bold>
+            {symbol}
+            {authorName}
+          </Text>
         </Box>
         <Box marginLeft={2}>
-            <Text color={isSelected ? 'blue' : undefined}>
-                {activity?.title}{detailsText}
-            </Text>
+          <Text color={isSelected ? 'blue' : undefined}>
+            {activity?.title}
+            {detailsText}
+          </Text>
         </Box>
       </Box>
     );
