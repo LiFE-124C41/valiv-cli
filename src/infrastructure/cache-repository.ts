@@ -36,4 +36,8 @@ export class CacheRepository implements ICacheRepository {
   clear(key: string): void {
     this.store.delete(key);
   }
+
+  getPath(): string {
+    return this.store.path;
+  }
 }

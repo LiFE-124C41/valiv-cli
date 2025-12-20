@@ -19,8 +19,9 @@ program
 program
   .command('init')
   .description('Initialize valiv-cli')
-  .action(() => {
-    render(<App command="init" />);
+  .option('-C, --clean', 'Clean existing configuration and cache')
+  .action((options) => {
+    render(<App command="init" clean={options.clean} />);
   });
 
 program
@@ -43,6 +44,7 @@ program
   .description('List registered creators')
   .option('-d, --detail', 'Show detailed information')
   .option('-i, --interactive', 'Enable interactive mode')
+  .option('-r, --refresh', 'Force refresh data')
   .option('--no-color-creator', 'Disable creator colors')
   .action((options) => {
     render(
@@ -50,6 +52,7 @@ program
         command="list"
         detail={options.detail}
         interactive={options.interactive}
+        refresh={options.refresh}
         disableColor={!options.colorCreator}
       />,
     );

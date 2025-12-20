@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Text, Box, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
+import Spinner from 'ink-spinner';
 import { IConfigRepository } from '../../domain/interfaces.js';
 import { Creator } from '../../domain/models.js';
+import {
+  YouTubeService,
+  YouTubeChannelStatistics,
+} from '../../infrastructure/youtube-service.js';
+import { formatSubscriberCount } from '../../utils/stringUtils.js';
 import open from 'open';
 
 interface CreatorListScreenProps {
   configRepo: IConfigRepository;
+  youtubeService: YouTubeService;
   detail?: boolean;
   interactive?: boolean;
   onNavigate?: (screen: 'check', props: { filterId?: string }) => void;
   disableColor?: boolean;
+  refresh?: boolean;
 }
 
 type ViewState = 'list' | 'actions';
 
 const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   configRepo,
+  youtubeService,
   detail,
   interactive,
   onNavigate,
   disableColor,
+  refresh,
 }) => {
   const { exit } = useApp();
   const [creators, setCreators] = useState<Creator[]>(() =>
@@ -28,18 +38,84 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   );
   const [viewState, setViewState] = useState<ViewState>('list');
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+  const [channelStats, setChannelStats] = useState<
+    Record<string, YouTubeChannelStatistics>
+  >({});
+
+  // Initial loading state depends on whether we have a token
+  const [loading, setLoading] = useState(
+    () => !!configRepo.getYoutubeApiToken(),
+  );
 
   useEffect(() => {
-    if (!interactive) {
+    const fetchStats = async () => {
+      const token = configRepo.getYoutubeApiToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Collect all channel IDs
+        const channelIds = creators
+          .map((c) => c.youtubeChannelId)
+          .filter((id): id is string => !!id);
+
+        if (channelIds.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        const counts = await youtubeService.getSubscriberCounts(
+          channelIds,
+          token,
+          refresh,
+        );
+
+        // Format numbers is handled in render now for consistency, or we store raw strings
+        // The service returns raw strings in the object.
+        // We just map channelStats to creator IDs.
+
+        const mappedStats: Record<string, YouTubeChannelStatistics> = {};
+        for (const [id, stats] of Object.entries(counts)) {
+          // Map back to creator IDs using channel ID
+          const creator = creators.find((c) => c.youtubeChannelId === id);
+          if (creator) {
+            mappedStats[creator.id] = stats;
+          }
+        }
+
+        setChannelStats(mappedStats);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, [configRepo, youtubeService, creators, refresh]);
+
+  useEffect(() => {
+    if (!interactive && !loading) {
       exit();
     }
-  }, [interactive, exit]);
+  }, [interactive, loading, exit]);
 
   useInput((input) => {
     if (interactive && viewState === 'list' && input === 'q') {
       exit();
     }
   });
+
+  if (loading) {
+    return (
+      <Box padding={1}>
+        <Text color="green">
+          <Spinner type="dots" /> Updating subscriber counts...
+        </Text>
+      </Box>
+    );
+  }
 
   if (creators.length === 0) {
     return (
@@ -96,7 +172,11 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   if (interactive) {
     if (viewState === 'list') {
       const items = creators.map((c) => ({
-        label: c.name,
+        label:
+          c.name +
+          (channelStats[c.id]
+            ? ` [${formatSubscriberCount(channelStats[c.id].subscriberCount, detail)}]`
+            : ''),
         value: c.id,
       }));
 
@@ -158,6 +238,32 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                   {creator.symbol ? `${creator.symbol} ` : ''}
                   {creator.name}
                 </Text>
+
+                {channelStats[creator.id] && (
+                  <Box marginLeft={2} flexDirection="column" marginBottom={1}>
+                    <Text>
+                      👥 Subscribers:{' '}
+                      {formatSubscriberCount(
+                        channelStats[creator.id].subscriberCount,
+                        true,
+                      )}
+                    </Text>
+                    <Text>
+                      👀 Views:{' '}
+                      {formatSubscriberCount(
+                        channelStats[creator.id].viewCount,
+                        true,
+                      )}
+                    </Text>
+                    <Text>
+                      📺 Videos:{' '}
+                      {formatSubscriberCount(
+                        channelStats[creator.id].videoCount,
+                        true,
+                      )}
+                    </Text>
+                  </Box>
+                )}
                 <Box marginLeft={2} flexDirection="column">
                   <Text>ID: {creator.id}</Text>
                   {creator.youtubeChannelId && (
@@ -181,6 +287,17 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                   {creator.symbol ? `${creator.symbol} ` : ''}
                   {creator.name}
                 </Text>
+                {channelStats[creator.id] && (
+                  <Text color="yellow">
+                    {' '}
+                    [
+                    {formatSubscriberCount(
+                      channelStats[creator.id].subscriberCount,
+                      false,
+                    )}
+                    ]
+                  </Text>
+                )}
                 <Text> - </Text>
                 <Text dimColor>
                   {creator.youtubeChannelId ? 'YT ' : ''}
@@ -192,5 +309,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
     </Box>
   );
 };
+
+// Helper for formatting large numbers
 
 export default CreatorListScreen;

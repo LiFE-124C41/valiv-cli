@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { stripHtml } from './stringUtils.js';
+import {
+  stripHtml,
+  abbreviateNumber,
+  formatSubscriberCount,
+} from './stringUtils.js';
 
 describe('stripHtml', () => {
   it('removes simple html tags', () => {
@@ -71,5 +75,40 @@ https://www.twitch.tv/utagawaletora
       'Link: <a href="https://www.google.com/url?q=https://bnent.jp/UtagawaLetora/&sa=D&source=calendar&usd=2&usg=AOvVaw39npP2APvD3nnNutlPa7c_"><u>https://bnent.jp/UtagawaLetora/</u></a>';
     const expected = 'Link: https://bnent.jp/UtagawaLetora/';
     expect(stripHtml(input)).toBe(expected);
+  });
+});
+
+describe('abbreviateNumber', () => {
+  it('abbreviates thousands', () => {
+    expect(abbreviateNumber(1234)).toBe('1.2K');
+    expect(abbreviateNumber(1500)).toBe('1.5K');
+  });
+
+  it('abbreviates millions', () => {
+    expect(abbreviateNumber(1234567)).toBe('1.23M');
+  });
+
+  it('returns as string if less than 1000', () => {
+    expect(abbreviateNumber(999)).toBe('999');
+  });
+});
+
+describe('formatSubscriberCount', () => {
+  it('formats with abbreviation by default (detail=false/undefined)', () => {
+    expect(formatSubscriberCount('1234')).toBe('1.2K');
+    expect(formatSubscriberCount('1234', false)).toBe('1.2K');
+  });
+
+  it('formats with locale string when detail=true', () => {
+    // Note: toLocaleString output depends on locale. Assuming Node default includes commas for US/JP
+    // We can allow flexible matching or force a locale if possible, but browsers/node usually default to en-US behavior for these tests.
+    // If this fails due to locale, we might need to mock toLocaleString or be specific.
+    // Let's assume standard behavior for now.
+    expect(formatSubscriberCount('1234', true)).toMatch(/1,234/);
+    expect(formatSubscriberCount('1000000', true)).toMatch(/1,000,000/);
+  });
+
+  it('handles non-numeric strings', () => {
+    expect(formatSubscriberCount('invalid')).toBe('invalid');
   });
 });

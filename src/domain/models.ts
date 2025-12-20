@@ -39,8 +39,14 @@ export interface Activity {
   description?: string;
   /** 活動を行ったクリエイター */
   author?: Creator;
-  /** 再生数 (RSSから取得) */
+  /** 再生数 (RSSから取得、またはAPIから補完) */
   views?: number;
+  /** ステータス (live | upcoming | video) - API連携時のみ有効 */
+  status?: 'live' | 'upcoming' | 'video';
+  /** 同時視聴者数 (liveの場合のみ) - API連携時のみ有効 */
+  concurrentViewers?: string;
+  /** 高評価数 - API連携時のみ有効 */
+  likeCount?: string;
 }
 
 export interface ScheduleEvent {
@@ -60,4 +66,10 @@ export interface ScheduleEvent {
   platform: Platform;
   /** イベントの作成者 */
   author?: Creator;
+  /** ステータス (upcoming | live) */
+  status?: 'upcoming' | 'live';
+  /** 同時視聴者数 (liveの場合のみ) */
+  concurrentViewers?: string;
+  /** 高評価数 (liveの場合のみ) */
+  likeCount?: string;
 }
