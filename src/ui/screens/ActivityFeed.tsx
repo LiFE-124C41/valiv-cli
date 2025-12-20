@@ -426,31 +426,45 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     const authorColor = disableColor
       ? 'green'
       : activity?.author?.color || 'green';
-
-    // Reconstruct label parts
-    const match = label.match(/^\[(.*?)\] (.*)$/);
-    if (match) {
-      const [, authorName, content] = match;
-      const symbol = activity?.author?.symbol
-        ? `${activity.author.symbol} `
-        : '';
-      return (
-        <Text>
-          <Text color="blue">{isSelected ? '> ' : '  '}</Text>
-          <Text color={authorColor}>
-            [{symbol}
-            {authorName}]{' '}
-          </Text>
-          <Text color={isSelected ? 'blue' : undefined}>{content}</Text>
-        </Text>
-      );
+    
+    // Construct details text again here since we are not parsing label anymore
+    let detailsText = '';
+    if (activity) {
+        if (activity.status === 'live') {
+          const viewers = activity.concurrentViewers
+            ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
+            : 'Live';
+          const likes = activity.likeCount
+            ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+            : '';
+          detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
+        } else {
+          const likes = activity.likeCount
+            ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+            : '';
+          detailsText = activity.views
+            ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
+            : ` (${activity.timestamp.toLocaleDateString()})`;
+        }
     }
 
+    const symbol = activity?.author?.symbol ? `${activity.author.symbol} ` : '';
+    const authorName = activity?.author?.name || 'Unknown';
+
     return (
-      <Text color={isSelected ? 'blue' : undefined}>
-        {isSelected ? '> ' : '  '}
-        {label}
-      </Text>
+      <Box flexDirection="column" marginLeft={1}>
+        <Box>
+            <Text color="blue">{isSelected ? '> ' : '  '}</Text>
+            <Text color={authorColor} bold>
+                {symbol}{authorName}
+            </Text>
+        </Box>
+        <Box marginLeft={2}>
+            <Text color={isSelected ? 'blue' : undefined}>
+                {activity?.title}{detailsText}
+            </Text>
+        </Box>
+      </Box>
     );
   };
 
