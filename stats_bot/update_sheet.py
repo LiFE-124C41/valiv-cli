@@ -39,11 +39,10 @@ def get_channel_info_from_ts(file_path):
 
 def main():
     # 1. 環境変数から認証情報を取得
-    api_key = os.environ.get("YOUTUBE_API_KEY")
     service_account_json = os.environ.get("GCP_SERVICE_ACCOUNT_JSON")
 
-    if not api_key or not service_account_json:
-        raise ValueError("API Key or Service Account JSON is missing.")
+    if not service_account_json:
+        raise ValueError("Service Account JSON is missing.")
 
     # サービスアカウント情報のロード
     service_account_info = json.loads(service_account_json)
@@ -57,14 +56,19 @@ def main():
     print(f"{len(channels)} 件のチャンネル情報を読み込みました。")
 
     # 3. YouTube API & Google Sheets API の準備
-    youtube = build('youtube', 'v3', developerKey=api_key)
-
-    # Google Sheets 認証
+    
+    # 認証スコープの設定 (YouTube + Sheets + Drive)
     scopes = [
+        'https://www.googleapis.com/auth/youtube.readonly',
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive'
     ]
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
+    
+    # YouTube API クライアントの構築 (Service Account Credentialsを使用)
+    youtube = build('youtube', 'v3', credentials=creds)
+    
+    # Google Sheets クライアントの認証
     client = gspread.authorize(creds)
 
     try:
