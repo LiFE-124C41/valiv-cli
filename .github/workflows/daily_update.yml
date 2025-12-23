@@ -1,0 +1,28 @@
+name: Daily Subscriber Update
+
+on:
+  schedule:
+    # 毎日 日本時間の朝9時 (UTC 0:00) に実行
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 手動実行ボタンも有効にする
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v3
+
+      - name: Pythonのセットアップ
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: ライブラリのインストール
+        run: |
+          pip install -r stats_bot/requirements.txt
+
+      - name: スクリプトの実行
+        env:
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        run: python stats_bot/update_sheet.py
