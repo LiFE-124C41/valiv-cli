@@ -105,15 +105,15 @@ def main():
                 continue
 
             stats = response['items'][0]['statistics']
-            subscribers = stats['subscriberCount']
-            video_count = stats['videoCount']
-            view_count = stats['viewCount']
+            subscribers = int(stats['subscriberCount'])
+            video_count = int(stats['videoCount'])
+            view_count = int(stats['viewCount'])
 
             print(f"取得成功: {name} ({member_id}) - 登録者数: {subscribers}")
 
             # 最終行にデータを追加 [日付, 登録者数, 動画数, 総再生数]
             # IDごとのシートになったので名前カラムは削除してシンプルにしました
-            sheet.append_row([today, subscribers, video_count, view_count])
+            sheet.append_row([today, subscribers, video_count, view_count], value_input_option='USER_ENTERED')
             
         except Exception as e:
             print(f"[{name}] エラーが発生しました: {e}")
