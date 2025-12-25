@@ -20,6 +20,26 @@ interface CreatorListScreenProps {
 
 type ViewState = 'list' | 'actions';
 
+interface GrowthIndicatorProps {
+  value?: number;
+}
+
+const GrowthIndicator: React.FC<GrowthIndicatorProps> = ({ value }) => {
+  if (value === undefined || value === 0) return null;
+
+  const isPositive = value > 0;
+  const color = isPositive ? 'green' : 'red';
+  const prefix = isPositive ? '+' : '';
+
+  return (
+    <Text color={color}>
+      {' '}
+      ({prefix}
+      {value.toLocaleString()})
+    </Text>
+  );
+};
+
 const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   configRepo,
   spreadsheetService,
@@ -203,156 +223,97 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
       <Box marginTop={1} flexDirection="column">
         {detail
           ? // Detailed View
-            creators.map((creator) => (
-              <Box key={creator.id} flexDirection="column" marginBottom={1}>
-                <Text
-                  bold
-                  color={disableColor ? 'green' : creator.color || 'green'}
-                >
-                  {creator.symbol ? `${creator.symbol} ` : ''}
-                  {creator.name}
-                </Text>
+          creators.map((creator) => (
+            <Box key={creator.id} flexDirection="column" marginBottom={1}>
+              <Text
+                bold
+                color={disableColor ? 'green' : creator.color || 'green'}
+              >
+                {creator.symbol ? `${creator.symbol} ` : ''}
+                {creator.name}
+              </Text>
 
-                {channelStats[creator.id] && (
-                  <Box marginLeft={2} flexDirection="column" marginBottom={1}>
-                    <Text>
-                      👥 Subscribers:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].subscriberCount,
-                        true,
-                      )}
-                      {channelStats[creator.id].subscriberGrowth !==
-                        undefined &&
-                        channelStats[creator.id].subscriberGrowth !== 0 && (
-                          <Text
-                            color={
-                              channelStats[creator.id].subscriberGrowth! > 0
-                                ? 'green'
-                                : 'red'
-                            }
-                          >
-                            {' '}
-                            (
-                            {channelStats[creator.id].subscriberGrowth! > 0
-                              ? '+'
-                              : ''}
-                            {channelStats[creator.id].subscriberGrowth})
-                          </Text>
-                        )}
-                    </Text>
-                    <Text>
-                      👀 Views:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].viewCount,
-                        true,
-                      )}
-                      {channelStats[creator.id].viewGrowth !== undefined &&
-                        channelStats[creator.id].viewGrowth !== 0 && (
-                          <Text
-                            color={
-                              channelStats[creator.id].viewGrowth! > 0
-                                ? 'green'
-                                : 'red'
-                            }
-                          >
-                            {' '}
-                            (
-                            {channelStats[creator.id].viewGrowth! > 0
-                              ? '+'
-                              : ''}
-                            {channelStats[creator.id].viewGrowth})
-                          </Text>
-                        )}
-                    </Text>
-                    <Text>
-                      📺 Videos:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].videoCount,
-                        true,
-                      )}
-                      {channelStats[creator.id].videoGrowth !== undefined &&
-                        channelStats[creator.id].videoGrowth !== 0 && (
-                          <Text
-                            color={
-                              channelStats[creator.id].videoGrowth! > 0
-                                ? 'green'
-                                : 'red'
-                            }
-                          >
-                            {' '}
-                            (
-                            {channelStats[creator.id].videoGrowth! > 0
-                              ? '+'
-                              : ''}
-                            {channelStats[creator.id].videoGrowth})
-                          </Text>
-                        )}
-                    </Text>
-                  </Box>
-                )}
-                <Box marginLeft={2} flexDirection="column">
-                  <Text>ID: {creator.id}</Text>
-                  {creator.youtubeChannelId && (
-                    <Text>YouTube: {creator.youtubeChannelId}</Text>
-                  )}
-                  {creator.twitchChannelId && (
-                    <Text>Twitch: {creator.twitchChannelId}</Text>
-                  )}
-                  {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
-                  {creator.calendarUrl && <Text>Calendar: Registered</Text>}
-                </Box>
-              </Box>
-            ))
-          : // Simple View
-            creators.map((creator) => (
-              <Box key={creator.id}>
-                <Text
-                  bold
-                  color={disableColor ? 'green' : creator.color || 'green'}
-                >
-                  {creator.symbol ? `${creator.symbol} ` : ''}
-                  {creator.name}
-                </Text>
-                {channelStats[creator.id] && (
-                  <Text color="yellow">
-                    {' '}
-                    [
+              {channelStats[creator.id] && (
+                <Box marginLeft={2} flexDirection="column" marginBottom={1}>
+                  <Text>
+                    👥 Subscribers:{' '}
                     {formatSubscriberCount(
                       channelStats[creator.id].subscriberCount,
-                      false,
+                      true,
                     )}
-                    ]
-                    {channelStats[creator.id].subscriberGrowth !== undefined &&
-                      channelStats[creator.id].subscriberGrowth !== 0 && (
-                        <Text
-                          color={
-                            channelStats[creator.id].subscriberGrowth! > 0
-                              ? 'green'
-                              : 'red'
-                          }
-                        >
-                          {' '}
-                          (
-                          {channelStats[creator.id].subscriberGrowth! > 0
-                            ? '+'
-                            : ''}
-                          {channelStats[creator.id].subscriberGrowth})
-                        </Text>
-                      )}
+                    <GrowthIndicator
+                      value={channelStats[creator.id].subscriberGrowth}
+                    />
                   </Text>
+                  <Text>
+                    👀 Views:{' '}
+                    {formatSubscriberCount(
+                      channelStats[creator.id].viewCount,
+                      true,
+                    )}
+                    <GrowthIndicator
+                      value={channelStats[creator.id].viewGrowth}
+                    />
+                  </Text>
+                  <Text>
+                    📺 Videos:{' '}
+                    {formatSubscriberCount(
+                      channelStats[creator.id].videoCount,
+                      true,
+                    )}
+                    <GrowthIndicator
+                      value={channelStats[creator.id].videoGrowth}
+                    />
+                  </Text>
+                </Box>
+              )}
+              <Box marginLeft={2} flexDirection="column">
+                <Text>ID: {creator.id}</Text>
+                {creator.youtubeChannelId && (
+                  <Text>YouTube: {creator.youtubeChannelId}</Text>
                 )}
-                <Text> - </Text>
-                <Text dimColor>
-                  {creator.youtubeChannelId ? 'YT ' : ''}
-                  {creator.calendarUrl ? 'Cal ' : ''}
-                </Text>
+                {creator.twitchChannelId && (
+                  <Text>Twitch: {creator.twitchChannelId}</Text>
+                )}
+                {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
+                {creator.calendarUrl && <Text>Calendar: Registered</Text>}
               </Box>
-            ))}
+            </Box>
+          ))
+          : // Simple View
+          creators.map((creator) => (
+            <Box key={creator.id}>
+              <Text
+                bold
+                color={disableColor ? 'green' : creator.color || 'green'}
+              >
+                {creator.symbol ? `${creator.symbol} ` : ''}
+                {creator.name}
+              </Text>
+              {channelStats[creator.id] && (
+                <Text color="yellow">
+                  {' '}
+                  [
+                  {formatSubscriberCount(
+                    channelStats[creator.id].subscriberCount,
+                    false,
+                  )}
+                  ]
+                  <GrowthIndicator
+                    value={channelStats[creator.id].subscriberGrowth}
+                  />
+                </Text>
+              )}
+              <Text> - </Text>
+              <Text dimColor>
+                {creator.youtubeChannelId ? 'YT ' : ''}
+                {creator.calendarUrl ? 'Cal ' : ''}
+              </Text>
+            </Box>
+          ))}
       </Box>
     </Box>
   );
 };
-
-// Helper for formatting large numbers
 
 export default CreatorListScreen;
