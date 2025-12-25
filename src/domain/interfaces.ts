@@ -35,5 +35,8 @@ export interface IConfigRepository {
   removeCreator(id: string): void;
   getYoutubeApiToken(): string | undefined;
   saveYoutubeApiToken(token: string): void;
+
+  getGoogleSpreadsheetId(): string | undefined;
+  saveGoogleSpreadsheetId(id: string): void;
   getPath(): string;
 }

@@ -4,6 +4,7 @@ import { ConfigRepository } from '../infrastructure/config-repository.js';
 import { CacheRepository } from '../infrastructure/cache-repository.js';
 import { YouTubeService } from '../infrastructure/youtube-service.js';
 import { CalendarService } from '../infrastructure/calendar-service.js';
+import { SpreadsheetService } from '../infrastructure/spreadsheet-service.js';
 import WelcomeScreen from './screens/Welcome.js';
 import CreatorListScreen from './screens/CreatorList.js';
 import ActivityFeedScreen from './screens/ActivityFeed.js';
@@ -47,6 +48,7 @@ const App: React.FC<AppProps> = ({
   const [calendarService] = useState(
     () => new CalendarService(cacheRepo, configRepo, youtubeService),
   );
+  const [spreadsheetService] = useState(() => new SpreadsheetService(cacheRepo));
 
   // Navigation State
   const [currentScreen, setCurrentScreen] = useState<ScreenName>(
@@ -171,7 +173,7 @@ const App: React.FC<AppProps> = ({
       return (
         <CreatorListScreen
           configRepo={configRepo}
-          youtubeService={youtubeService}
+          spreadsheetService={spreadsheetService}
           detail={detail}
           interactive={interactive}
           refresh={refresh}

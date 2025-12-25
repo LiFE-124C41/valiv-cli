@@ -3,17 +3,14 @@ import { Text, Box, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
 import { IConfigRepository } from '../../domain/interfaces.js';
-import { Creator } from '../../domain/models.js';
-import {
-  YouTubeService,
-  YouTubeChannelStatistics,
-} from '../../infrastructure/youtube-service.js';
+import { Creator, CreatorStatistics } from '../../domain/models.js';
+import { SpreadsheetService } from '../../infrastructure/spreadsheet-service.js';
 import { formatSubscriberCount } from '../../utils/stringUtils.js';
 import open from 'open';
 
 interface CreatorListScreenProps {
   configRepo: IConfigRepository;
-  youtubeService: YouTubeService;
+  spreadsheetService: SpreadsheetService;
   detail?: boolean;
   interactive?: boolean;
   onNavigate?: (screen: 'check', props: { filterId?: string }) => void;
@@ -25,7 +22,7 @@ type ViewState = 'list' | 'actions';
 
 const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   configRepo,
-  youtubeService,
+  spreadsheetService,
   detail,
   interactive,
   onNavigate,
@@ -38,54 +35,31 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   );
   const [viewState, setViewState] = useState<ViewState>('list');
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+
   const [channelStats, setChannelStats] = useState<
-    Record<string, YouTubeChannelStatistics>
+    Record<string, CreatorStatistics>
   >({});
 
-  // Initial loading state depends on whether we have a token
+  // Initial loading state depends on whether we have a spreadsheet ID
   const [loading, setLoading] = useState(
-    () => !!configRepo.getYoutubeApiToken(),
+    () => !!configRepo.getGoogleSpreadsheetId(),
   );
 
   useEffect(() => {
     const fetchStats = async () => {
-      const token = configRepo.getYoutubeApiToken();
-      if (!token) {
+      const spreadsheetId = configRepo.getGoogleSpreadsheetId();
+      if (!spreadsheetId) {
         setLoading(false);
         return;
       }
 
       try {
-        // Collect all channel IDs
-        const channelIds = creators
-          .map((c) => c.youtubeChannelId)
-          .filter((id): id is string => !!id);
-
-        if (channelIds.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        const counts = await youtubeService.getSubscriberCounts(
-          channelIds,
-          token,
+        const stats = await spreadsheetService.getStatistics(
+          spreadsheetId,
+          creators,
           refresh,
         );
-
-        // Format numbers is handled in render now for consistency, or we store raw strings
-        // The service returns raw strings in the object.
-        // We just map channelStats to creator IDs.
-
-        const mappedStats: Record<string, YouTubeChannelStatistics> = {};
-        for (const [id, stats] of Object.entries(counts)) {
-          // Map back to creator IDs using channel ID
-          const creator = creators.find((c) => c.youtubeChannelId === id);
-          if (creator) {
-            mappedStats[creator.id] = stats;
-          }
-        }
-
-        setChannelStats(mappedStats);
+        setChannelStats(stats);
       } catch (e) {
         console.error(e);
       } finally {
@@ -93,7 +67,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
       }
     };
     fetchStats();
-  }, [configRepo, youtubeService, creators, refresh]);
+  }, [configRepo, spreadsheetService, creators, refresh]);
 
   useEffect(() => {
     if (!interactive && !loading) {
@@ -229,82 +203,102 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
       <Box marginTop={1} flexDirection="column">
         {detail
           ? // Detailed View
-            creators.map((creator) => (
-              <Box key={creator.id} flexDirection="column" marginBottom={1}>
-                <Text
-                  bold
-                  color={disableColor ? 'green' : creator.color || 'green'}
-                >
-                  {creator.symbol ? `${creator.symbol} ` : ''}
-                  {creator.name}
-                </Text>
+          creators.map((creator) => (
+            <Box key={creator.id} flexDirection="column" marginBottom={1}>
+              <Text
+                bold
+                color={disableColor ? 'green' : creator.color || 'green'}
+              >
+                {creator.symbol ? `${creator.symbol} ` : ''}
+                {creator.name}
+              </Text>
 
-                {channelStats[creator.id] && (
-                  <Box marginLeft={2} flexDirection="column" marginBottom={1}>
-                    <Text>
-                      👥 Subscribers:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].subscriberCount,
-                        true,
-                      )}
-                    </Text>
-                    <Text>
-                      👀 Views:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].viewCount,
-                        true,
-                      )}
-                    </Text>
-                    <Text>
-                      📺 Videos:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].videoCount,
-                        true,
-                      )}
-                    </Text>
-                  </Box>
-                )}
-                <Box marginLeft={2} flexDirection="column">
-                  <Text>ID: {creator.id}</Text>
-                  {creator.youtubeChannelId && (
-                    <Text>YouTube: {creator.youtubeChannelId}</Text>
-                  )}
-                  {creator.twitchChannelId && (
-                    <Text>Twitch: {creator.twitchChannelId}</Text>
-                  )}
-                  {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
-                  {creator.calendarUrl && <Text>Calendar: Registered</Text>}
-                </Box>
-              </Box>
-            ))
-          : // Simple View
-            creators.map((creator) => (
-              <Box key={creator.id}>
-                <Text
-                  bold
-                  color={disableColor ? 'green' : creator.color || 'green'}
-                >
-                  {creator.symbol ? `${creator.symbol} ` : ''}
-                  {creator.name}
-                </Text>
-                {channelStats[creator.id] && (
-                  <Text color="yellow">
-                    {' '}
-                    [
+              {channelStats[creator.id] && (
+                <Box marginLeft={2} flexDirection="column" marginBottom={1}>
+                  <Text>
+                    👥 Subscribers:{' '}
                     {formatSubscriberCount(
                       channelStats[creator.id].subscriberCount,
-                      false,
+                      true,
                     )}
-                    ]
+                    {(channelStats[creator.id].subscriberGrowth !== undefined && channelStats[creator.id].subscriberGrowth !== 0) && (
+                      <Text color={channelStats[creator.id].subscriberGrowth! > 0 ? 'green' : 'red'}>
+                        {' '}({channelStats[creator.id].subscriberGrowth! > 0 ? '+' : ''}{channelStats[creator.id].subscriberGrowth})
+                      </Text>
+                    )}
                   </Text>
+                  <Text>
+                    👀 Views:{' '}
+                    {formatSubscriberCount(
+                      channelStats[creator.id].viewCount,
+                      true,
+                    )}
+                    {(channelStats[creator.id].viewGrowth !== undefined && channelStats[creator.id].viewGrowth !== 0) && (
+                      <Text color={channelStats[creator.id].viewGrowth! > 0 ? 'green' : 'red'}>
+                        {' '}({channelStats[creator.id].viewGrowth! > 0 ? '+' : ''}{channelStats[creator.id].viewGrowth})
+                      </Text>
+                    )}
+                  </Text>
+                  <Text>
+                    📺 Videos:{' '}
+                    {formatSubscriberCount(
+                      channelStats[creator.id].videoCount,
+                      true,
+                    )}
+                    {(channelStats[creator.id].videoGrowth !== undefined && channelStats[creator.id].videoGrowth !== 0) && (
+                      <Text color={channelStats[creator.id].videoGrowth! > 0 ? 'green' : 'red'}>
+                        {' '}({channelStats[creator.id].videoGrowth! > 0 ? '+' : ''}{channelStats[creator.id].videoGrowth})
+                      </Text>
+                    )}
+                  </Text>
+                </Box>
+              )}
+              <Box marginLeft={2} flexDirection="column">
+                <Text>ID: {creator.id}</Text>
+                {creator.youtubeChannelId && (
+                  <Text>YouTube: {creator.youtubeChannelId}</Text>
                 )}
-                <Text> - </Text>
-                <Text dimColor>
-                  {creator.youtubeChannelId ? 'YT ' : ''}
-                  {creator.calendarUrl ? 'Cal ' : ''}
-                </Text>
+                {creator.twitchChannelId && (
+                  <Text>Twitch: {creator.twitchChannelId}</Text>
+                )}
+                {creator.xUsername && <Text>X: @{creator.xUsername}</Text>}
+                {creator.calendarUrl && <Text>Calendar: Registered</Text>}
               </Box>
-            ))}
+            </Box>
+          ))
+          : // Simple View
+          creators.map((creator) => (
+            <Box key={creator.id}>
+              <Text
+                bold
+                color={disableColor ? 'green' : creator.color || 'green'}
+              >
+                {creator.symbol ? `${creator.symbol} ` : ''}
+                {creator.name}
+              </Text>
+              {channelStats[creator.id] && (
+                <Text color="yellow">
+                  {' '}
+                  [
+                  {formatSubscriberCount(
+                    channelStats[creator.id].subscriberCount,
+                    false,
+                  )}
+                  ]
+                  {(channelStats[creator.id].subscriberGrowth !== undefined && channelStats[creator.id].subscriberGrowth !== 0) && (
+                    <Text color={channelStats[creator.id].subscriberGrowth! > 0 ? 'green' : 'red'}>
+                      {' '}({channelStats[creator.id].subscriberGrowth! > 0 ? '+' : ''}{channelStats[creator.id].subscriberGrowth})
+                    </Text>
+                  )}
+                </Text>
+              )}
+              <Text> - </Text>
+              <Text dimColor>
+                {creator.youtubeChannelId ? 'YT ' : ''}
+                {creator.calendarUrl ? 'Cal ' : ''}
+              </Text>
+            </Box>
+          ))}
       </Box>
     </Box>
   );

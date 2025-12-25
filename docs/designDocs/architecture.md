@@ -34,7 +34,8 @@ src/
 │   ├── calendar-service.ts # Google Calendar iCal処理
 │   ├── video-player-service.ts # 動画再生 (MPV/Browser)
 │   ├── config-repository.ts # 設定ファイル読み書き
-│   └── cache-repository.ts # データキャッシュ (conf)
+│   ├── cache-repository.ts # データキャッシュ (conf)
+│   └── spreadsheet-service.ts # Google Sheet CSV取得
 ├── ui/               # プレゼンテーション層 (UI): Inkコンポーネント
 │   ├── App.tsx       # メインコンポーネント
 │   ├── components/   # 再利用可能なUI部品

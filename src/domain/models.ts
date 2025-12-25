@@ -20,6 +20,21 @@ export interface Creator {
   calendarUrl?: string;
 }
 
+export interface CreatorStatistics {
+  /** 登録者数 */
+  subscriberCount: string;
+  /** 総再生回数 */
+  viewCount: string;
+  /** 動画数 */
+  videoCount: string;
+  /** 前日比（登録者数増加） */
+  subscriberGrowth?: number;
+  /** 前日比（再生数増加） */
+  viewGrowth?: number;
+  /** 前日比（動画数増加） */
+  videoGrowth?: number;
+}
+
 export interface Activity {
   /** 活動の一意なID (動画IDなど) */
   id: string;
