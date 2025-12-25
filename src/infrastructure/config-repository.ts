@@ -1,10 +1,12 @@
 import Conf from 'conf';
 import { Creator } from '../domain/models.js';
 import { IConfigRepository } from '../domain/interfaces.js';
+import { DEFAULT_SPREADSHEET_ID } from '../domain/constants.js';
 
 interface ConfigSchema {
   creators: Creator[];
   youtubeApiToken?: string;
+  googleSpreadsheetId?: string;
 }
 
 export class ConfigRepository implements IConfigRepository {
@@ -63,6 +65,14 @@ export class ConfigRepository implements IConfigRepository {
 
   saveYoutubeApiToken(token: string): void {
     this.store.set('youtubeApiToken', token);
+  }
+
+  getGoogleSpreadsheetId(): string | undefined {
+    return this.store.get('googleSpreadsheetId') || DEFAULT_SPREADSHEET_ID;
+  }
+
+  saveGoogleSpreadsheetId(id: string): void {
+    this.store.set('googleSpreadsheetId', id);
   }
 
   getPath(): string {

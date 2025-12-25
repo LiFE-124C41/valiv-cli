@@ -1,4 +1,7 @@
-import { Creator } from './models';
+import { Creator } from './models.js';
+
+export const DEFAULT_SPREADSHEET_ID =
+  '1ZMNZcE7U-l20iGtRRsl7J6GXBfgzX1UiUIAtjCiobCs';
 
 export const VALIV_MEMBERS: Creator[] = [
   {
