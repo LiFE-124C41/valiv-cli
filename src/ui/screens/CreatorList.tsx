@@ -20,6 +20,26 @@ interface CreatorListScreenProps {
 
 type ViewState = 'list' | 'actions';
 
+interface GrowthIndicatorProps {
+  value?: number;
+}
+
+const GrowthIndicator: React.FC<GrowthIndicatorProps> = ({ value }) => {
+  if (value === undefined || value === 0) return null;
+
+  const isPositive = value > 0;
+  const color = isPositive ? 'green' : 'red';
+  const prefix = isPositive ? '+' : '';
+
+  return (
+    <Text color={color}>
+      {' '}
+      ({prefix}
+      {value.toLocaleString()})
+    </Text>
+  );
+};
+
 const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   configRepo,
   spreadsheetService,
@@ -221,24 +241,9 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                         channelStats[creator.id].subscriberCount,
                         true,
                       )}
-                      {channelStats[creator.id].subscriberGrowth !==
-                        undefined &&
-                        channelStats[creator.id].subscriberGrowth !== 0 && (
-                          <Text
-                            color={
-                              channelStats[creator.id].subscriberGrowth! > 0
-                                ? 'green'
-                                : 'red'
-                            }
-                          >
-                            {' '}
-                            (
-                            {channelStats[creator.id].subscriberGrowth! > 0
-                              ? '+'
-                              : ''}
-                            {channelStats[creator.id].subscriberGrowth})
-                          </Text>
-                        )}
+                      <GrowthIndicator
+                        value={channelStats[creator.id].subscriberGrowth}
+                      />
                     </Text>
                     <Text>
                       👀 Views:{' '}
@@ -246,23 +251,9 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                         channelStats[creator.id].viewCount,
                         true,
                       )}
-                      {channelStats[creator.id].viewGrowth !== undefined &&
-                        channelStats[creator.id].viewGrowth !== 0 && (
-                          <Text
-                            color={
-                              channelStats[creator.id].viewGrowth! > 0
-                                ? 'green'
-                                : 'red'
-                            }
-                          >
-                            {' '}
-                            (
-                            {channelStats[creator.id].viewGrowth! > 0
-                              ? '+'
-                              : ''}
-                            {channelStats[creator.id].viewGrowth})
-                          </Text>
-                        )}
+                      <GrowthIndicator
+                        value={channelStats[creator.id].viewGrowth}
+                      />
                     </Text>
                     <Text>
                       📺 Videos:{' '}
@@ -270,23 +261,9 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                         channelStats[creator.id].videoCount,
                         true,
                       )}
-                      {channelStats[creator.id].videoGrowth !== undefined &&
-                        channelStats[creator.id].videoGrowth !== 0 && (
-                          <Text
-                            color={
-                              channelStats[creator.id].videoGrowth! > 0
-                                ? 'green'
-                                : 'red'
-                            }
-                          >
-                            {' '}
-                            (
-                            {channelStats[creator.id].videoGrowth! > 0
-                              ? '+'
-                              : ''}
-                            {channelStats[creator.id].videoGrowth})
-                          </Text>
-                        )}
+                      <GrowthIndicator
+                        value={channelStats[creator.id].videoGrowth}
+                      />
                     </Text>
                   </Box>
                 )}
@@ -322,23 +299,9 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                       false,
                     )}
                     ]
-                    {channelStats[creator.id].subscriberGrowth !== undefined &&
-                      channelStats[creator.id].subscriberGrowth !== 0 && (
-                        <Text
-                          color={
-                            channelStats[creator.id].subscriberGrowth! > 0
-                              ? 'green'
-                              : 'red'
-                          }
-                        >
-                          {' '}
-                          (
-                          {channelStats[creator.id].subscriberGrowth! > 0
-                            ? '+'
-                            : ''}
-                          {channelStats[creator.id].subscriberGrowth})
-                        </Text>
-                      )}
+                    <GrowthIndicator
+                      value={channelStats[creator.id].subscriberGrowth}
+                    />
                   </Text>
                 )}
                 <Text> - </Text>
@@ -352,7 +315,5 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
     </Box>
   );
 };
-
-// Helper for formatting large numbers
 
 export default CreatorListScreen;
