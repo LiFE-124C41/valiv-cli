@@ -7,6 +7,8 @@ YouTube, X, Google Calendar などの情報を集約し、灯里愛夏、上水�
 
 *   📺 **Activity Check**: メンバー（灯里愛夏、上水流宇宙、レトラ）の最新動画や配信状況を一覧表示
 *   📅 **Schedule**: 公式 Google Calendar からスケジュールを取得して表示
+*   🤖 **AI Summary**: Gemini API を使用して動画の内容を要約
+*   🎵 **Audio Player**: 音声のみの再生やプレイリスト再生に対応
 
 ## インストール
 
@@ -37,14 +39,19 @@ npm install
 最初に初期化を行い、設定ファイルを作成します。
 実行すると vα-liv メンバー（灯里愛夏、上水流宇宙、レトラ、公式）のデータが自動的に登録され、すぐに利用を開始できます。
 
-初期化プロセス中に **YouTube Data API v3 Key** (Token) の入力を求められます。
-Token を設定することで、以下の機能が有効になります（スキップ可能）：
-- `list` コマンドでのチャンネル登録者数表示
-- `schedule` コマンドでの正確な配信予定取得（YouTube Data API経由）
+初期化プロセス中に以下のAPIキーの入力を求められます（スキップ可能）。
+
+1.  **YouTube Data API v3 Key** (Token)
+    *   `list` コマンドでのチャンネル登録者数表示
+    *   `schedule` コマンドでの正確な配信予定取得（YouTube Data API経由）
+2.  **Google Gemini API Key**
+    *   `check` コマンドでの動画要約機能 (`-s` オプション)
 
 ```bash
 valiv init
 ```
+
+*   `-C, --clean`: 既存の設定とキャッシュをクリアして初期化します。
 
 ### クリエイターの追加
 
@@ -60,6 +67,8 @@ valiv add
 
 ```bash
 valiv remove
+# または
+valiv rm
 ```
 
 ### 登録済みクリエイターの一覧
@@ -72,7 +81,10 @@ valiv list
 valiv list --detail
 # インタラクティブモード
 valiv list --interactive
-
+# キャッシュを無視して強制更新
+valiv list --refresh
+# クリエイターごとの色分けを無効化
+valiv list --no-color-creator
 ```
 
 *   **Tips**: `init` コマンドで YouTube API Token を設定している場合、チャンネル登録者数も併せて表示されます。
@@ -87,9 +99,14 @@ valiv check
 valiv check "Creator Name"
 # キャッシュを無視して強制更新
 valiv check --refresh
+# 動画の内容を要約（要 Gemini API Key）
+valiv check --summary
 # プレイリストを指定して再生
 valiv check --playlist /path/to/playlist.csv
-
+# 映像なし（音声のみ）で再生
+valiv check --audio-only
+# デバッグログを出力
+valiv check --debug
 ```
 
 *   **操作方法**:
@@ -100,11 +117,10 @@ valiv check --playlist /path/to/playlist.csv
     *   `mpv` が見つからない場合、デフォルトのブラウザで URL を開きます。
     *   `--audio-only` (`-a`) オプションを指定すると、映像なし（音声のみ）で再生します。
         *   音声再生中は `q` キーを押すことで再生を停止し、CLIを終了できます。
-    *   `--debug` (`-d`) オプションを指定すると、`valiv_debug.log` に詳細なログ（yt-dlpの出力含む）を出力します。
-    *   `--refresh` (`-r`) オプションを使用すると、キャッシュを無視して最新のデータを取得します。
-    *   `--playlist` (`-p`) オプションでプレイリストCSVを指定して再生できます。
+    *   `--playlist` (`-p`) オプションで `uta_picker` 形式のプレイリストCSVを指定して再生できます。
+*   **AI 要約**:
+    *   `--summary` (`-s`) オプションを使用すると、最新の動画の要約を表示します（要 Gemini API Key）。
 *   **取得データの制限**:
-    *   YouTubeの情報はRSSフィードから取得しているため、直近の15件程度の動画/配信のみが表示されます。
     *   YouTubeの情報はRSSフィードから取得しているため、直近の15件程度の動画/配信のみが表示されます。
     *   配信予定については `schedule` コマンドのご利用を推奨します（API Token設定時はより正確な情報を取得できます）。
 
@@ -121,7 +137,6 @@ valiv schedule "Creator Name"
 valiv schedule --week
 # 強制更新
 valiv schedule --refresh
-
 ```
 
 ## 開発
@@ -149,22 +164,6 @@ npm run dev
 
 ```bash
 npm test
-```
-
-#### UIモードでの実行
-
-ブラウザ上でテスト結果を可視化して確認したい場合は、以下のコマンドを使用します。
-
-```bash
-npx vitest --ui
-```
-
-#### CIモード (1回のみ実行)
-
-CI環境などで1回だけ実行して終了したい場合は、以下のコマンドを使用します。
-
-```bash
-npx vitest run
 ```
 
 ### コードフォーマット & Lint
