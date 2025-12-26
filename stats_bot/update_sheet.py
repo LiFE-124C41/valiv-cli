@@ -1,4 +1,5 @@
 import os
+import sys
 import datetime
 import json
 import re
@@ -7,7 +8,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 # スプレッドシートの名前
-SPREADSHEET_NAME = 'subscribers_log'
+SPREADSHEET_NAME = 'valiv_youtube_data_log'
 
 # constants.ts のパス (このスクリプトからの相対パス)
 CONSTANTS_PATH = os.path.join(os.path.dirname(__file__), '../src/domain/constants.ts')
@@ -51,7 +52,7 @@ def main():
     channels = get_channel_info_from_ts(CONSTANTS_PATH)
     if not channels:
         print("チャンネル情報が見つかりませんでした。")
-        return
+        sys.exit(1)
 
     print(f"{len(channels)} 件のチャンネル情報を読み込みました。")
 
@@ -75,11 +76,12 @@ def main():
         spreadsheet = client.open(SPREADSHEET_NAME)
     except gspread.exceptions.SpreadsheetNotFound:
         print(f"Error: スプレッドシート '{SPREADSHEET_NAME}' が見つかりませんでした。")
-        return
+        sys.exit(1)
 
     today = datetime.date.today().strftime('%Y-%m-%d')
 
     # 4. 各チャンネルのデータを取得して書き込み
+    has_error = False
     for channel in channels:
         member_id = channel['member_id']
         name = channel['name']
@@ -102,6 +104,7 @@ def main():
 
             if not response['items']:
                 print(f"[{name}] チャンネルが見つかりませんでした (ID: {youtube_id})")
+                has_error = True
                 continue
 
             stats = response['items'][0]['statistics']
@@ -117,7 +120,12 @@ def main():
             
         except Exception as e:
             print(f"[{name}] エラーが発生しました: {e}")
+            has_error = True
 
+    if has_error:
+        print("一部のチャンネルでエラーが発生したため、処理を失敗とみなします。")
+        sys.exit(1)
+    
     print("全チャンネルの処理が完了しました。")
 
 if __name__ == "__main__":
