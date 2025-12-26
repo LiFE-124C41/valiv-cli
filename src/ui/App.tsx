@@ -5,6 +5,7 @@ import { CacheRepository } from '../infrastructure/cache-repository.js';
 import { YouTubeService } from '../infrastructure/youtube-service.js';
 import { CalendarService } from '../infrastructure/calendar-service.js';
 import { SpreadsheetService } from '../infrastructure/spreadsheet-service.js';
+import { SummarizeService } from '../infrastructure/summarize-service.js';
 import WelcomeScreen from './screens/Welcome.js';
 import CreatorListScreen from './screens/CreatorList.js';
 import ActivityFeedScreen from './screens/ActivityFeed.js';
@@ -24,6 +25,7 @@ interface AppProps {
   week?: boolean;
   disableColor?: boolean;
   clean?: boolean;
+  summary?: boolean;
 }
 
 type ScreenName = 'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule';
@@ -40,6 +42,7 @@ const App: React.FC<AppProps> = ({
   week,
   disableColor,
   clean,
+  summary,
 }) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
@@ -51,6 +54,7 @@ const App: React.FC<AppProps> = ({
   const [spreadsheetService] = useState(
     () => new SpreadsheetService(cacheRepo),
   );
+  const [summarizeService] = useState(() => new SummarizeService());
 
   // Navigation State
   const [currentScreen, setCurrentScreen] = useState<ScreenName>(
@@ -194,6 +198,8 @@ const App: React.FC<AppProps> = ({
           debug={debug}
           refresh={refresh}
           disableColor={disableColor}
+          summary={summary}
+          summarizeService={summarizeService}
         />
       );
     case 'schedule':

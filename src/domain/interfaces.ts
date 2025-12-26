@@ -28,6 +28,14 @@ export interface IScheduleService {
   ): Promise<ScheduleEvent[]>;
 }
 
+export interface ISummarizeService {
+  summarizeVideo(
+    videoId: string,
+    apiKey: string,
+    onProgress?: (message: string) => void,
+  ): Promise<string>;
+}
+
 export interface IConfigRepository {
   getCreators(): Creator[];
   saveCreator(creator: Creator): void;
@@ -38,5 +46,8 @@ export interface IConfigRepository {
 
   getGoogleSpreadsheetId(): string | undefined;
   saveGoogleSpreadsheetId(id: string): void;
+
+  getGeminiApiKey(): string | undefined;
+  saveGeminiApiKey(key: string): void;
   getPath(): string;
 }
