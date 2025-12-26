@@ -6,6 +6,7 @@ import { DEFAULT_SPREADSHEET_ID } from '../domain/constants.js';
 interface ConfigSchema {
   creators: Creator[];
   youtubeApiToken?: string;
+  geminiApiKey?: string;
   googleSpreadsheetId?: string;
 }
 
@@ -73,6 +74,14 @@ export class ConfigRepository implements IConfigRepository {
 
   saveGoogleSpreadsheetId(id: string): void {
     this.store.set('googleSpreadsheetId', id);
+  }
+
+  getGeminiApiKey(): string | undefined {
+    return this.store.get('geminiApiKey');
+  }
+
+  saveGeminiApiKey(key: string): void {
+    this.store.set('geminiApiKey', key);
   }
 
   getPath(): string {

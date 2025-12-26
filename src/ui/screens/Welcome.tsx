@@ -24,13 +24,21 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [updatedMembers, setUpdatedMembers] = useState<typeof VALIV_MEMBERS>(
     [],
   );
-  const [step, setStep] = useState<'init' | 'token' | 'done'>('init');
+  const [step, setStep] = useState<'init' | 'token' | 'gemini_token' | 'done'>(
+    'init',
+  );
   const [tokenInput, setTokenInput] = useState('');
+  const [geminiTokenInput, setGeminiTokenInput] = useState('');
   const tokenInputRef = React.useRef(tokenInput);
+  const geminiTokenInputRef = React.useRef(geminiTokenInput);
 
   useEffect(() => {
     tokenInputRef.current = tokenInput;
   }, [tokenInput]);
+
+  useEffect(() => {
+    geminiTokenInputRef.current = geminiTokenInput;
+  }, [geminiTokenInput]);
 
   useEffect(() => {
     const initializeMembers = async () => {
@@ -68,12 +76,24 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         if (currentInput.trim().length > 0) {
           configRepo.saveYoutubeApiToken(currentInput.trim());
         }
-        setStep('done');
+        setStep('gemini_token');
+        // Reset input logic for next step if needed, but we use separate states
       } else if (key.backspace || key.delete) {
         setTokenInput((prev) => prev.slice(0, -1));
       } else if (input.length > 0) {
-        // Naive input handling, sufficient for basic CLI
         setTokenInput((prev) => prev + input);
+      }
+    } else if (step === 'gemini_token') {
+      if (key.return) {
+        const currentInput = geminiTokenInputRef.current;
+        if (currentInput.trim().length > 0) {
+          configRepo.saveGeminiApiKey(currentInput.trim());
+        }
+        setStep('done');
+      } else if (key.backspace || key.delete) {
+        setGeminiTokenInput((prev) => prev.slice(0, -1));
+      } else if (input.length > 0) {
+        setGeminiTokenInput((prev) => prev + input);
       }
     } else if (step === 'done' && key.return) {
       process.exit(0);
@@ -117,6 +137,32 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     );
   }
 
+  if (step === 'gemini_token') {
+    return (
+      <Box
+        flexDirection="column"
+        padding={1}
+        borderStyle="round"
+        borderColor="cyan"
+      >
+        <Text bold color="cyan">
+          Setup Gemini API Key (Optional)
+        </Text>
+        <Box marginY={1}>
+          <Text>
+            To use video summarization, please enter your Google Gemini API Key.
+          </Text>
+          <Text dimColor>(Press Enter to skip)</Text>
+        </Box>
+        <Box>
+          <Text>API Key: </Text>
+          <Text color="green">{geminiTokenInput}</Text>
+          <Text dimColor>|</Text>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       flexDirection="column"
@@ -146,6 +192,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           {tokenInput
             ? 'YouTube API Token configured!'
             : 'YouTube API Token skipped.'}
+        </Text>
+        <Text>
+          {geminiTokenInput
+            ? 'Gemini API Key configured!'
+            : 'Gemini API Key skipped.'}
         </Text>
       </Box>
       <Box marginTop={1}>

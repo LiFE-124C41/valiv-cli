@@ -6,6 +6,7 @@ import fs from 'fs';
 import {
   IConfigRepository,
   IActivityService,
+  ISummarizeService,
 } from '../../domain/interfaces.js';
 import { Activity } from '../../domain/models.js';
 import { VideoPlayerService } from '../../infrastructure/video-player-service.js';
@@ -21,6 +22,8 @@ interface ActivityFeedScreenProps {
   debug?: boolean;
   refresh?: boolean;
   disableColor?: boolean;
+  summary?: boolean;
+  summarizeService?: ISummarizeService;
 }
 
 interface PlaylistItem {
@@ -41,10 +44,15 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   debug,
   refresh,
   disableColor,
+  summary,
+  summarizeService,
 }) => {
   const { exit } = useApp();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [summaryText, setSummaryText] = useState<string | null>(null);
+  const [summaryStatus, setSummaryStatus] = useState<string>('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [currentTitle, setCurrentTitle] = useState<string>('');
@@ -284,6 +292,32 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       setCurrentTitle(selectedActivity.title);
       setCurrentColor(selectedActivity.author?.color);
       setCurrentSymbol(selectedActivity.author?.symbol);
+
+      if (summary && summarizeService) {
+        setIsLaunching(false); // Cancel launching UI
+        const apiKey = configRepo.getGeminiApiKey();
+        if (!apiKey) {
+          setSummaryText(
+            'Gemini API Key is not configured. Please run `valiv init`.',
+          );
+          return;
+        }
+
+        setSummaryText(null); // Clear previous summary
+        setIsSummarizing(true);
+        setSummaryStatus('Initializing summary...'); // Initial status
+
+        summarizeService
+          .summarizeVideo(selectedActivity.id, apiKey, (msg) => {
+            setSummaryStatus(msg);
+          })
+          .then((text) =>
+            setSummaryText(`[Summary: ${selectedActivity.title}]\n${text}`),
+          )
+          .catch((err) => setSummaryText(`Error summarizing: ${err.message}`))
+          .finally(() => setIsSummarizing(false));
+        return;
+      }
     }
 
     playerServiceRef.current = new VideoPlayerService();
@@ -486,6 +520,23 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
           itemComponent={ItemComponent}
         />
       </Box>
+      {isSummarizing && (
+        <Box marginTop={1} borderStyle="round" borderColor="yellow">
+          <Text>
+            <Spinner type="dots" /> {summaryStatus || 'Generating summary...'}
+          </Text>
+        </Box>
+      )}
+      {summaryText && (
+        <Box
+          marginTop={1}
+          borderStyle="round"
+          borderColor="magenta"
+          padding={1}
+        >
+          <Text>{summaryText}</Text>
+        </Box>
+      )}
     </Box>
   );
 };

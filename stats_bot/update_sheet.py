@@ -112,7 +112,7 @@ def main():
             video_count = int(stats['videoCount'])
             view_count = int(stats['viewCount'])
 
-            print(f"取得成功: {name} ({member_id}) - 登録者数: {subscribers}")
+            print(f"取得成功: {name} ({member_id}) - 登録者数: {subscribers}, 動画数: {video_count}, 総再生数: {view_count}")
 
             # 最終行にデータを追加 [日付, 登録者数, 動画数, 総再生数]
             # IDごとのシートになったので名前カラムは削除してシンプルにしました

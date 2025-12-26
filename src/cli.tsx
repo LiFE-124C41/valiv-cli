@@ -66,6 +66,10 @@ program
   .option('-p, --playlist <path>', 'Path to uta_picker playlist CSV file')
   .option('-d, --debug', 'Enable debug logging to file')
   .option('-r, --refresh', 'Force refresh data')
+  .option(
+    '-s, --summary',
+    'Summarize the latest activity (requires Gemini API Key)',
+  )
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
@@ -76,6 +80,7 @@ program
         playlist={options.playlist}
         debug={options.debug}
         refresh={options.refresh}
+        summary={options.summary}
         disableColor={!options.colorCreator}
       />,
     );

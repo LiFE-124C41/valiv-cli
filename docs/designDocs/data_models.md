@@ -145,6 +145,8 @@ export interface ConfigSchema {
   creators: Creator[];
   /** YouTube Data API v3 Key (Optional) */
   youtubeApiToken?: string;
+  /** Google Gemini API Key (Optional) */
+  geminiApiKey?: string;
 }
 ```
 

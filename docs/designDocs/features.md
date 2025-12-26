@@ -21,6 +21,9 @@
         - 実行時に最終確認のプロンプトが表示されます。(`y/N`)
         - 削除対象: 設定ファイル (`valiv-cli` 関連フォルダ)、キャッシュファイル
         - 注意: 登録済みのクリエイター情報やAPIトークンはすべて失われます。
+    - **Gemini API Key設定** (New):
+        - `init` 実行に、Google Gemini API Key の入力を求めます。（スキップ可能）
+        - 設定された場合、`check` コマンドで動画の要約機能が利用可能になります。
 - **使用法**: 
     - `valiv init`
     - `valiv init --clean`
@@ -101,6 +104,13 @@
 - **オプション**:
     - `--refresh` (`-r`): キャッシュを無視してデータを再取得します。
     - `--audio-only` (`-a`): 音声のみ再生します。
+    - `--summary` (`-s`): 選択した動画の要約を表示します。
+        - **要件**: `init` で Gemini API Key が設定されている必要があります。
+        - **動作**: 
+            - リストからエンターキーで動画を選択した際、通常の再生処理の代わりに要約処理を実行します。
+            - YouTubeの字幕データ (`youtube-transcript`) を取得します。
+            - Gemini API (`gemini-3-flash-preview`) を使用して内容を要約します。
+            - 要約結果をリストの上部に表示します。
     - `--debug` (`-d`): デバッグログを出力します。
 - **使用法**:
     - `valiv check`
@@ -180,6 +190,7 @@
 - **内容**: 
     - `creators`: 登録クリエイターのリスト
     - `youtubeApiToken`: (Optional) YouTube Data API Token
+    - `geminiApiKey`: (Optional) Google Gemini API Key
     - `googleSpreadsheetId`: (Optional) 統計情報を取得するための公開スプレッドシートID（未設定時はデフォルト値が使用されます）
 
 ## 統計情報データソース
