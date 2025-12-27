@@ -66,11 +66,7 @@ export class SummarizeService implements ISummarizeService {
 
       const fullText = transcriptItems.map((item) => item.text).join(' ');
 
-      return await this.generateSummaryWithGemini(
-        apiKey,
-        fullText,
-        onProgress,
-      );
+      return await this.generateSummaryWithGemini(apiKey, fullText, onProgress);
     } catch (error) {
       // エラーログは出さず、UIに表示するメッセージを返す
       const errorMessage =
