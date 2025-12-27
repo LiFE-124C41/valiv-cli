@@ -7,6 +7,8 @@ interface ConfigSchema {
   creators: Creator[];
   youtubeApiToken?: string;
   geminiApiKey?: string;
+  twitchClientId?: string;
+  twitchClientSecret?: string;
   googleSpreadsheetId?: string;
 }
 
@@ -82,6 +84,22 @@ export class ConfigRepository implements IConfigRepository {
 
   saveGeminiApiKey(key: string): void {
     this.store.set('geminiApiKey', key);
+  }
+
+  getTwitchClientId(): string | undefined {
+    return this.store.get('twitchClientId');
+  }
+
+  saveTwitchClientId(clientId: string): void {
+    this.store.set('twitchClientId', clientId);
+  }
+
+  getTwitchClientSecret(): string | undefined {
+    return this.store.get('twitchClientSecret');
+  }
+
+  saveTwitchClientSecret(clientSecret: string): void {
+    this.store.set('twitchClientSecret', clientSecret);
   }
 
   getPath(): string {

@@ -24,6 +24,9 @@
     - **Gemini API Key設定** (New):
         - `init` 実行に、Google Gemini API Key の入力を求めます。（スキップ可能）
         - 設定された場合、`check` コマンドで動画の要約機能が利用可能になります。
+    - **Twitch設定** (New):
+        - `init` 実行に、Twitch Client ID / Secret の入力を求めます。（スキップ可能）
+        - 設定された場合、`check` コマンドで Twitch 配信状況の確認、`schedule` コマンドで Twitch 配信予定の確認が可能になります。
 - **使用法**: 
     - `valiv init`
     - `valiv init --clean`
@@ -63,9 +66,9 @@
 ### 5. `check`
 クリエイターの最新の活動状況を確認します。
 - **機能**:
-    - 登録された全クリエイター（または指定されたクリエイター）のYouTube更新情報を取得します。
+    - 登録された全クリエイター（または指定されたクリエイター）のYouTube/Twitch更新情報（アーカイブ含む）を取得します。
     - 結果を時系列順（新しい順）にソートして表示します。
-        - **YouTube API Token設定時**: 実際の配信開始時刻（または開始予定時刻）に基づいて正確にソートされます。
+        - **YouTube/Twitch API設定時**: 実際の配信開始時刻（または開始予定時刻）に基づいて正確にソートされます。
     - **ページネーション**:
         - 1ページあたり10件を表示します。
         - リストの末尾にある「Next Page」「Previous Page」を選択してページ切り替えが可能です。
@@ -141,9 +144,9 @@
         - このモードでは、レイアウト崩れを防ぐためクリエイターのシンボル（絵文字）は非表示になります。
     - **データソース**:
         - デフォルトでは Google Calendar (iCal) から情報を取得します。
-        - **YouTube API Tokenが設定されている場合**:
+        - **YouTube / Twitch API設定時**:
             - **統合ロジック**:
-                - YouTube Data API から直近1ヶ月の配信予定を取得します。
+                - YouTube Data API / Twitch Helix API から直近の配信予定を取得します。
                 - iCal からも全ての予定を取得します。
                 - **重複排除**: 「同一クリエイター」かつ「iCalで取得した予定の[開始時刻, 終了時刻]の期間内に、YouTube APIで取得した配信の開始時刻が含まれる」場合、それを「同一の配信」とみなします。この場合、情報の正確性が高い YouTube API 側のデータを優先して表示し、iCal側の予定は非表示とします。**ただし、終了時刻についてはiCal側の情報がある場合、それを優先して採用します。**
                 - マッチしないiCalの予定（Twitch配信や、API未反映の予定など）はそのまま表示されます。
@@ -183,9 +186,17 @@
 - **認証**: 不要（公開設定であること）
 - **処理**: iCal形式のデータをパースし、直近の予定を抽出します。説明文（Description）に含まれるHTMLタグは除去して表示します。
 
-### X / Twitch
+### Twitch
+- **取得方法**: Twitch Helix API (`streams` endpoint, `schedule` endpoint)
+- **認証**: Client Credentials Flow (Client ID & Secret 必須)
+- **機能**:
+    - **配信中確認**: `check` コマンドで現在ライブ配信中のストリームを取得します。
+    - **アーカイブ確認**: `check` コマンドで過去の配信アーカイブを取得します。
+    - **スケジュール確認**: `schedule` コマンドで今後の配信予定を取得します。
+
+### X (旧Twitter)
 - **現状**: API制限および認証の複雑さを避けるため、`open` コマンドによるブラウザ遷移のみサポートしています。
-- **将来展望**: 公式APIまたはスクレイピングによる情報取得の検討。
+- **将来展望**: スクレイピングによる情報取得の検討。
 
 ## 設定ファイル
 - **場所**: `~/.config/valiv/config.json` (OSにより異なる場合があります)
@@ -195,6 +206,8 @@
     - `creators`: 登録クリエイターのリスト
     - `youtubeApiToken`: (Optional) YouTube Data API Token
     - `geminiApiKey`: (Optional) Google Gemini API Key
+    - `twitchClientId`: (Optional) Twitch Client ID
+    - `twitchClientSecret`: (Optional) Twitch Client Secret
     - `googleSpreadsheetId`: (Optional) 統計情報を取得するための公開スプレッドシートID（未設定時はデフォルト値が使用されます）
 
 ## 統計情報データソース

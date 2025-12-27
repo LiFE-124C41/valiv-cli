@@ -44,7 +44,11 @@ npm install
 1.  **YouTube Data API v3 Key** (Token)
     *   `list` コマンドでのチャンネル登録者数表示
     *   `schedule` コマンドでの正確な配信予定取得（YouTube Data API経由）
-2.  **Google Gemini API Key**
+2.  **Twitch Client ID & Client Secret**
+    *   Twitch のライブ配信ステータス確認
+    *   Twitch の過去アーカイブ取得
+    *   Twitch の配信スケジュール取得
+3.  **Google Gemini API Key**
     *   `check` コマンドでの動画要約機能 (`-s` オプション)
 
 ```bash
@@ -120,17 +124,22 @@ valiv check --debug
     *   `--playlist` (`-p`) オプションで `uta_picker` 形式のプレイリストCSVを指定して再生できます。
 *   **AI 要約**:
     *   `--summary` (`-s`) オプションを使用すると、最新の動画の要約を表示します（要 Gemini API Key）。
+        *   **注意**: 現在 Twitch のアーカイブやライブ配信の要約には対応していません。オプション指定時は YouTube の動画のみが表示されます。
 *   **その他**:
     *   `--debug` (`-d`) オプションを指定すると、`valiv_debug.log` に詳細なログ（yt-dlpの出力含む）を出力します。
     *   `--refresh` (`-r`) オプションを使用すると、キャッシュを無視して最新のデータを取得します。
 *   **取得データの制限**:
     *   YouTubeの情報はRSSフィードから取得しているため、直近の15件程度の動画/配信のみが表示されます。
+    *   Twitch連携を設定している場合、Twitchのライブ配信と過去のアーカイブも表示されます。
     *   配信予定については `schedule` コマンドのご利用を推奨します（API Token設定時はより正確な情報を取得できます）。
 
 ### スケジュールの確認
 
 Google Calendar から取得したスケジュールを表示します。
-**YouTube API Token** が設定されている場合、YouTube Data API からも配信予定を取得し、より正確な情報を表示します。
+API設定が有効な場合、以下のソースからも情報を取得・統合します。
+
+*   **YouTube Data API**: 配信予定枠とライブ配信
+*   **Twitch API**: 配信スケジュール（Twitch Schedule）とライブ配信
 
 ```bash
 valiv schedule

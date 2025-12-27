@@ -5,6 +5,7 @@ import { CacheRepository } from '../infrastructure/cache-repository.js';
 import { YouTubeService } from '../infrastructure/youtube-service.js';
 import { CalendarService } from '../infrastructure/calendar-service.js';
 import { SpreadsheetService } from '../infrastructure/spreadsheet-service.js';
+import { TwitchService } from '../infrastructure/twitch-service.js';
 import { SummarizeService } from '../infrastructure/summarize-service.js';
 import WelcomeScreen from './screens/Welcome.js';
 import CreatorListScreen from './screens/CreatorList.js';
@@ -48,8 +49,17 @@ const App: React.FC<AppProps> = ({
   const [configRepo] = useState(() => new ConfigRepository());
   const [cacheRepo] = useState(() => new CacheRepository());
   const [youtubeService] = useState(() => new YouTubeService(cacheRepo));
+  const [twitchService] = useState(() => {
+    const clientId = configRepo.getTwitchClientId();
+    const clientSecret = configRepo.getTwitchClientSecret();
+    if (clientId && clientSecret) {
+      return new TwitchService(clientId, clientSecret, cacheRepo);
+    }
+    return undefined;
+  });
+
   const [calendarService] = useState(
-    () => new CalendarService(cacheRepo, configRepo, youtubeService),
+    () => new CalendarService(cacheRepo, configRepo, youtubeService, twitchService),
   );
   const [spreadsheetService] = useState(
     () => new SpreadsheetService(cacheRepo),
@@ -192,6 +202,7 @@ const App: React.FC<AppProps> = ({
         <ActivityFeedScreen
           configRepo={configRepo}
           youtubeService={youtubeService}
+          twitchService={twitchService}
           filterId={screenProps.filterId}
           audioOnly={audioOnly}
           playlist={playlist}
