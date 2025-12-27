@@ -45,26 +45,11 @@ export class SummarizeService implements ISummarizeService {
           const manualText = await this.fetchManualTranscript(cleanVideoId);
           if (manualText) {
             // 手動取得成功
-            const fullText = manualText;
-
-            if (onProgress) onProgress('Generating summary with Gemini...');
-
-            // Gemini APIの初期化
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({
-              model: 'gemini-3-flash-preview',
-            });
-
-            const prompt = `以下のYouTube動画の字幕を要約してください。
-内容は日本語で出力してください。
-重要なポイントを箇条書きで3〜5点にまとめてください。
-
----
-${fullText}
-`;
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return response.text();
+            return await this.generateSummaryWithGemini(
+              apiKey,
+              manualText,
+              onProgress,
+            );
           }
         } catch (manualError) {
           const mErr =
@@ -81,25 +66,7 @@ ${fullText}
 
       const fullText = transcriptItems.map((item) => item.text).join(' ');
 
-      if (onProgress) onProgress('Generating summary with Gemini...');
-
-      // Gemini APIの初期化
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-3-flash-preview',
-      });
-
-      const prompt = `以下のYouTube動画の字幕を要約してください。
-内容は日本語で出力してください。
-重要なポイントを箇条書きで3〜5点にまとめてください。
-
----
-${fullText}
-`;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return await this.generateSummaryWithGemini(apiKey, fullText, onProgress);
     } catch (error) {
       // エラーログは出さず、UIに表示するメッセージを返す
       const errorMessage =
@@ -111,6 +78,75 @@ ${fullText}
     }
   }
 
+  private generatePrompt(transcript: string): string {
+    return `
+あなたはアイドルマスター vα-liv (ヴイアラ) の専任プロデューサー兼、熱心なファンです。
+以下のYouTube動画の字幕データをもとに、ファンに向けた魅力的な「要約レポート」を作成してください。
+
+ターゲット: vα-liv のファン（プロデューサー）
+口調: 丁寧だが熱量があり、読みやすい日本語。
+
+前提情報（クリエイタープロフィール）:
+メインのクリエイターは下記の３人です。要約する時に名前を間違えないで下さい。
+
+- 灯里 愛夏
+  - ローマ字：Manaka Tomori
+  - 愛称：愛夏
+- 上水流 宇宙
+  - ローマ字：Cosmo Kamizuru
+  - 愛称：宇宙
+- サラ レトラ オリヴェイラ ウタガワ
+  - ローマ字：Sara Letora Oliveira Utagawa
+  - 愛称：レトラ
+
+出力フォーマット（Markdown形式）:
+
+### 📺 配信概要
+(配信の全体的なテーマ、何をしたか、雑談のメインテーマなどを2-3行で要約)
+
+### ✨ 見どころ・ハイライト
+(特に面白かったシーン、可愛かった発言、盛り上がった瞬間などを箇条書きで3〜5点抽出)
+-
+-
+-
+
+### 🎵 セットリスト (歌枠・カラオケの場合のみ)
+(歌唱された楽曲があればリストアップしてください。なければ「なし」と記載するか、このセクションを省略してください)
+
+### 📢 告知・重要事項
+(今後の予定、グッズ情報、イベント告知などがあれば記載)
+
+---
+字幕データ:
+${transcript}
+`;
+  }
+
+  private async generateSummaryWithGemini(
+    apiKey: string,
+    transcript: string,
+    onProgress?: (message: string) => void,
+  ): Promise<string> {
+    if (onProgress) onProgress('Generating summary with Gemini...');
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-3-flash-preview',
+    });
+
+    const prompt = this.generatePrompt(transcript);
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    if (response.usageMetadata) {
+      const { promptTokenCount, candidatesTokenCount, totalTokenCount } =
+        response.usageMetadata;
+      return `${text}\n\n---\n[Gemini Usage] Input: ${promptTokenCount} / Output: ${candidatesTokenCount} / Total: ${totalTokenCount} tokens`;
+    }
+
+    return text;
+  }
   private async fetchManualTranscript(videoId: string): Promise<string> {
     const res = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
       headers: {
