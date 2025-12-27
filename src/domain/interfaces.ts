@@ -49,5 +49,11 @@ export interface IConfigRepository {
 
   getGeminiApiKey(): string | undefined;
   saveGeminiApiKey(key: string): void;
+
+  getTwitchClientId(): string | undefined;
+  saveTwitchClientId(clientId: string): void;
+  getTwitchClientSecret(): string | undefined;
+  saveTwitchClientSecret(clientSecret: string): void;
+
   getPath(): string;
 }

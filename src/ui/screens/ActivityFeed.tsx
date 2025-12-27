@@ -13,9 +13,12 @@ import { VideoPlayerService } from '../../infrastructure/video-player-service.js
 import { AudioPlayer } from '../components/AudioPlayer.js';
 import { filterCreators } from '../../utils/filter.js';
 
+import { TwitchService } from '../../infrastructure/twitch-service.js';
+
 interface ActivityFeedScreenProps {
   configRepo: IConfigRepository;
   youtubeService: IActivityService;
+  twitchService?: TwitchService;
   filterId?: string;
   audioOnly?: boolean;
   playlist?: string;
@@ -38,6 +41,7 @@ interface PlaylistItem {
 const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   configRepo,
   youtubeService,
+  twitchService,
   filterId,
   audioOnly,
   playlist,
@@ -211,21 +215,35 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         configRepo.getYoutubeApiToken(), // Pass API Token
       );
 
+      let twitchActivities: Activity[] = [];
+      if (twitchService && !summary) {
+        // Fetch Live Streams AND Recent VODs in parallel
+        const [liveStreams, pastVideos] = await Promise.all([
+          twitchService.getLiveStreams(allCreators),
+          twitchService.getRecentVideos(allCreators),
+        ]);
+        twitchActivities = [...liveStreams, ...pastVideos];
+      }
+
+      const combinedActivities = [...twitchActivities, ...allActivities];
+
       // Filter the returned activities to only include those from targetCreators
       // AND exclude future contents (views === 0) UNLESS it is live
-      const results = allActivities.filter((activity) => {
-        const isTargetCreator = targetCreators.some(
-          (c) => c.id === activity.author?.id,
-        );
-        // views can be undefined, checking specifically for 0.
-        // If status is 'live', we always show it.
-        // If status is 'upcoming', we hide it (as check is for recent activity, and schedule is for upcoming).
-        const isLive = activity.status === 'live';
-        const isUpcoming = activity.status === 'upcoming';
-        const hasViews = activity.views !== 0;
+      const results = combinedActivities
+        .filter((activity) => {
+          const isTargetCreator = targetCreators.some(
+            (c) => c.id === activity.author?.id,
+          );
+          // views can be undefined, checking specifically for 0.
+          // If status is 'live', we always show it.
+          // If status is 'upcoming', we hide it (as check is for recent activity, and schedule is for upcoming).
+          const isLive = activity.status === 'live';
+          const isUpcoming = activity.status === 'upcoming';
+          const hasViews = activity.views !== 0;
 
-        return isTargetCreator && (isLive || (hasViews && !isUpcoming));
-      });
+          return isTargetCreator && (isLive || (hasViews && !isUpcoming));
+        })
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
       setActivities(results);
       setLoading(false);
@@ -235,6 +253,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   }, [
     configRepo,
     youtubeService,
+    twitchService,
     filterId,
     playlist,
     loadPlaylistFromFile,

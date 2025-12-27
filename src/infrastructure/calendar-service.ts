@@ -5,6 +5,7 @@ import {
   IConfigRepository,
   IScheduleService,
 } from '../domain/interfaces.js';
+import { TwitchService } from './twitch-service.js';
 import { YouTubeService } from './youtube-service.js';
 
 export class CalendarService implements IScheduleService {
@@ -12,6 +13,7 @@ export class CalendarService implements IScheduleService {
     private cacheRepo: ICacheRepository,
     private configRepo: IConfigRepository,
     private youtubeService: YouTubeService,
+    private twitchService?: TwitchService,
   ) {}
 
   async getSchedules(
@@ -56,6 +58,7 @@ export class CalendarService implements IScheduleService {
 
     let schedules: ScheduleEvent[] = [];
     let youtubeEvents: ScheduleEvent[] = [];
+    let twitchEvents: ScheduleEvent[] = [];
 
     // 1. Fetch from YouTube API if available
     if (useApi) {
@@ -76,6 +79,41 @@ export class CalendarService implements IScheduleService {
       youtubeEvents = [...liveEvents, ...youtubeEvents];
     }
 
+    // 1-b. Fetch from Twitch API if available
+    if (this.twitchService) {
+      // Get Twitch Live streams (check command usually does this, but schedule might want to show them on top too)
+      // Actually Schedule command logic separates "Live" and "Upcoming", so fetching live is good.
+      // But TwitchService.getLiveStreams returns Activity[], not ScheduleEvent[].
+      // We should use `getLiveStreams` but map it to ScheduleEvent or modify TwitchService to return compatible types or use `getUpcomingSchedules` which returns ScheduleEvent.
+      // Wait, `getLiveStreams` returns Activity[]. `getUpcomingSchedules` returns ScheduleEvent[].
+      // For schedule view, we want ScheduleEvent.
+      // Let's implement live fetching inside `getUpcomingSchedules` or just call it here and map.
+      // However, `TwitchService` was implemented to return `Activity[]` for live streams.
+      // We can reuse `getLiveStreams` and map Activity to ScheduleEvent.
+
+      const twitchLiveActivities =
+        await this.twitchService.getLiveStreams(creators);
+      const twitchLiveEvents: ScheduleEvent[] = twitchLiveActivities.map(
+        (a) => ({
+          id: a.id,
+          title: a.title,
+          startTime: a.timestamp, // Started time
+          endTime: undefined,
+          url: a.url,
+          platform: 'twitch',
+          author: a.author,
+          status: 'live',
+          concurrentViewers: a.concurrentViewers,
+          likeCount: undefined,
+        }),
+      );
+
+      const twitchUpcomingEvents =
+        await this.twitchService.getUpcomingSchedules(creators);
+      twitchEvents = [...twitchLiveEvents, ...twitchUpcomingEvents];
+    }
+
+    // ... iCal fetching ...
     // 2. Fetch from iCal (Always fetch all future events first, then dedup)
     const iCalPromises = creators
       .filter((c) => c.calendarUrl)
@@ -124,8 +162,8 @@ export class CalendarService implements IScheduleService {
     const iCalEvents = iCalResults.flat();
 
     // 3. Merge and Deduplicate
-    // Start with all YouTube events
-    schedules = [...youtubeEvents];
+    // Start with all YouTube events and Twitch events
+    schedules = [...youtubeEvents, ...twitchEvents];
 
     if (useApi) {
       // If using API, check each iCal event.
@@ -159,6 +197,11 @@ export class CalendarService implements IScheduleService {
             matchingYtEvent.endTime = event.endTime;
           }
         } else {
+          // Also check overlap with Twitch events?
+          // Currently assuming iCal is primarily Google Calendar which syncs with YouTube automatically for some users,
+          // but Twitch schedules are separate. Even if iCal has Twitch schedule, we might prioritize API.
+          // But let's keep simple: iCal vs YouTube is special because iCal is often used TO SUPPLEMENT YouTube schedules.
+          // Twitch Schedule API is authoritative for Twitch.
           schedules.push(event);
         }
       }

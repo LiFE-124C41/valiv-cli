@@ -24,13 +24,18 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [updatedMembers, setUpdatedMembers] = useState<typeof VALIV_MEMBERS>(
     [],
   );
-  const [step, setStep] = useState<'init' | 'token' | 'gemini_token' | 'done'>(
-    'init',
-  );
+  const [step, setStep] = useState<
+    'init' | 'token' | 'gemini_token' | 'twitch_id' | 'twitch_secret' | 'done'
+  >('init');
   const [tokenInput, setTokenInput] = useState('');
   const [geminiTokenInput, setGeminiTokenInput] = useState('');
+  const [twitchIdInput, setTwitchIdInput] = useState('');
+  const [twitchSecretInput, setTwitchSecretInput] = useState('');
+
   const tokenInputRef = React.useRef(tokenInput);
   const geminiTokenInputRef = React.useRef(geminiTokenInput);
+  const twitchIdInputRef = React.useRef(twitchIdInput);
+  const twitchSecretInputRef = React.useRef(twitchSecretInput);
 
   useEffect(() => {
     tokenInputRef.current = tokenInput;
@@ -39,6 +44,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   useEffect(() => {
     geminiTokenInputRef.current = geminiTokenInput;
   }, [geminiTokenInput]);
+
+  useEffect(() => {
+    twitchIdInputRef.current = twitchIdInput;
+  }, [twitchIdInput]);
+
+  useEffect(() => {
+    twitchSecretInputRef.current = twitchSecretInput;
+  }, [twitchSecretInput]);
 
   useEffect(() => {
     const initializeMembers = async () => {
@@ -76,12 +89,39 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         if (currentInput.trim().length > 0) {
           configRepo.saveYoutubeApiToken(currentInput.trim());
         }
-        setStep('gemini_token');
+        setStep('twitch_id'); // YouTube -> Twitch
         // Reset input logic for next step if needed, but we use separate states
       } else if (key.backspace || key.delete) {
         setTokenInput((prev) => prev.slice(0, -1));
       } else if (input.length > 0) {
         setTokenInput((prev) => prev + input);
+      }
+    } else if (step === 'twitch_id') {
+      if (key.return) {
+        const currentInput = twitchIdInputRef.current;
+        if (currentInput.trim().length > 0) {
+          configRepo.saveTwitchClientId(currentInput.trim());
+          setStep('twitch_secret');
+        } else {
+          // Skip both logic
+          setStep('gemini_token'); // Skip Twitch -> Gemini
+        }
+      } else if (key.backspace || key.delete) {
+        setTwitchIdInput((prev) => prev.slice(0, -1));
+      } else if (input.length > 0) {
+        setTwitchIdInput((prev) => prev + input);
+      }
+    } else if (step === 'twitch_secret') {
+      if (key.return) {
+        const currentInput = twitchSecretInputRef.current;
+        if (currentInput.trim().length > 0) {
+          configRepo.saveTwitchClientSecret(currentInput.trim());
+        }
+        setStep('gemini_token'); // Twitch -> Gemini
+      } else if (key.backspace || key.delete) {
+        setTwitchSecretInput((prev) => prev.slice(0, -1));
+      } else if (input.length > 0) {
+        setTwitchSecretInput((prev) => prev + input);
       }
     } else if (step === 'gemini_token') {
       if (key.return) {
@@ -89,7 +129,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         if (currentInput.trim().length > 0) {
           configRepo.saveGeminiApiKey(currentInput.trim());
         }
-        setStep('done');
+        setStep('done'); // Gemini -> Done
       } else if (key.backspace || key.delete) {
         setGeminiTokenInput((prev) => prev.slice(0, -1));
       } else if (input.length > 0) {
@@ -118,7 +158,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         borderStyle="round"
         borderColor="cyan"
       >
-        <Text bold color="cyan">
+        <Text bold color="red">
           Setup YouTube API Token (Optional)
         </Text>
         <Box marginY={1}>
@@ -137,6 +177,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     );
   }
 
+  // Gemini Token block (standard cyan)
   if (step === 'gemini_token') {
     return (
       <Box
@@ -145,7 +186,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         borderStyle="round"
         borderColor="cyan"
       >
-        <Text bold color="cyan">
+        <Text bold color="blue">
           Setup Gemini API Key (Optional)
         </Text>
         <Box marginY={1}>
@@ -157,6 +198,55 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <Box>
           <Text>API Key: </Text>
           <Text color="green">{geminiTokenInput}</Text>
+          <Text dimColor>|</Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (step === 'twitch_id') {
+    return (
+      <Box
+        flexDirection="column"
+        padding={1}
+        borderStyle="round"
+        borderColor="cyan"
+      >
+        <Text bold color="magenta">
+          Setup Twitch Client ID (Optional)
+        </Text>
+        <Box marginY={1}>
+          <Text>
+            To track Twitch streams, please enter your Twitch Client ID.
+          </Text>
+          <Text dimColor>(Press Enter to skip)</Text>
+        </Box>
+        <Box>
+          <Text>Client ID: </Text>
+          <Text color="green">{twitchIdInput}</Text>
+          <Text dimColor>|</Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (step === 'twitch_secret') {
+    return (
+      <Box
+        flexDirection="column"
+        padding={1}
+        borderStyle="round"
+        borderColor="cyan"
+      >
+        <Text bold color="magenta">
+          Setup Twitch Client Secret
+        </Text>
+        <Box marginY={1}>
+          <Text>Please enter your Twitch Client Secret.</Text>
+        </Box>
+        <Box>
+          <Text>Client Secret: </Text>
+          <Text color="green">{'*'.repeat(twitchSecretInput.length)}</Text>
           <Text dimColor>|</Text>
         </Box>
       </Box>
@@ -192,6 +282,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           {tokenInput
             ? 'YouTube API Token configured!'
             : 'YouTube API Token skipped.'}
+        </Text>
+        <Text>
+          {twitchIdInput
+            ? 'Twitch Credentials configured!'
+            : 'Twitch Credentials skipped.'}
         </Text>
         <Text>
           {geminiTokenInput
