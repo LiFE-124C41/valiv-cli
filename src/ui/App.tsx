@@ -59,7 +59,8 @@ const App: React.FC<AppProps> = ({
   });
 
   const [calendarService] = useState(
-    () => new CalendarService(cacheRepo, configRepo, youtubeService, twitchService),
+    () =>
+      new CalendarService(cacheRepo, configRepo, youtubeService, twitchService),
   );
   const [spreadsheetService] = useState(
     () => new SpreadsheetService(cacheRepo),

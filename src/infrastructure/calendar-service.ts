@@ -14,7 +14,7 @@ export class CalendarService implements IScheduleService {
     private configRepo: IConfigRepository,
     private youtubeService: YouTubeService,
     private twitchService?: TwitchService,
-  ) { }
+  ) {}
 
   async getSchedules(
     creators: Creator[],
@@ -91,21 +91,25 @@ export class CalendarService implements IScheduleService {
       // However, `TwitchService` was implemented to return `Activity[]` for live streams.
       // We can reuse `getLiveStreams` and map Activity to ScheduleEvent.
 
-      const twitchLiveActivities = await this.twitchService.getLiveStreams(creators);
-      const twitchLiveEvents: ScheduleEvent[] = twitchLiveActivities.map(a => ({
-        id: a.id,
-        title: a.title,
-        startTime: a.timestamp, // Started time
-        endTime: undefined,
-        url: a.url,
-        platform: 'twitch',
-        author: a.author,
-        status: 'live',
-        concurrentViewers: a.concurrentViewers,
-        likeCount: undefined
-      }));
+      const twitchLiveActivities =
+        await this.twitchService.getLiveStreams(creators);
+      const twitchLiveEvents: ScheduleEvent[] = twitchLiveActivities.map(
+        (a) => ({
+          id: a.id,
+          title: a.title,
+          startTime: a.timestamp, // Started time
+          endTime: undefined,
+          url: a.url,
+          platform: 'twitch',
+          author: a.author,
+          status: 'live',
+          concurrentViewers: a.concurrentViewers,
+          likeCount: undefined,
+        }),
+      );
 
-      const twitchUpcomingEvents = await this.twitchService.getUpcomingSchedules(creators);
+      const twitchUpcomingEvents =
+        await this.twitchService.getUpcomingSchedules(creators);
       twitchEvents = [...twitchLiveEvents, ...twitchUpcomingEvents];
     }
 
@@ -193,8 +197,8 @@ export class CalendarService implements IScheduleService {
             matchingYtEvent.endTime = event.endTime;
           }
         } else {
-          // Also check overlap with Twitch events? 
-          // Currently assuming iCal is primarily Google Calendar which syncs with YouTube automatically for some users, 
+          // Also check overlap with Twitch events?
+          // Currently assuming iCal is primarily Google Calendar which syncs with YouTube automatically for some users,
           // but Twitch schedules are separate. Even if iCal has Twitch schedule, we might prioritize API.
           // But let's keep simple: iCal vs YouTube is special because iCal is often used TO SUPPLEMENT YouTube schedules.
           // Twitch Schedule API is authoritative for Twitch.

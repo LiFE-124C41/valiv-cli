@@ -24,7 +24,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [updatedMembers, setUpdatedMembers] = useState<typeof VALIV_MEMBERS>(
     [],
   );
-  const [step, setStep] = useState<'init' | 'token' | 'gemini_token' | 'twitch_id' | 'twitch_secret' | 'done'>('init');
+  const [step, setStep] = useState<
+    'init' | 'token' | 'gemini_token' | 'twitch_id' | 'twitch_secret' | 'done'
+  >('init');
   const [tokenInput, setTokenInput] = useState('');
   const [geminiTokenInput, setGeminiTokenInput] = useState('');
   const [twitchIdInput, setTwitchIdInput] = useState('');
@@ -240,9 +242,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           Setup Twitch Client Secret
         </Text>
         <Box marginY={1}>
-          <Text>
-            Please enter your Twitch Client Secret.
-          </Text>
+          <Text>Please enter your Twitch Client Secret.</Text>
         </Box>
         <Box>
           <Text>Client Secret: </Text>
