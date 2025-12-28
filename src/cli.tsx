@@ -9,6 +9,16 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 
+import updateNotifier from 'update-notifier';
+
+const notifier = updateNotifier({ pkg });
+
+if (notifier.update) {
+  notifier.notify({
+    message: `Update available ${notifier.update.current} → ${notifier.update.latest}\nRun npm i -g valiv-cli to update\n\nhttps://www.npmjs.com/package/valiv-cli`,
+  });
+}
+
 const program = new Command();
 
 program
