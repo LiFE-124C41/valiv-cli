@@ -150,3 +150,16 @@ export interface ConfigSchema {
 }
 ```
 
+
+### Google Spreadsheet Schema
+
+データは `daily_stats` という単一のワークシートに蓄積されます。
+
+| Column Index | Header Name | Description | Example |
+| :--- | :--- | :--- | :--- |
+| 0 | Date | 記録日 (YYYY-MM-DD) | 2024-01-01 |
+| 1 | Member ID | クリエイターID | manaka_tomori |
+| 2 | Name | クリエイター名 | Manaka Tomori |
+| 3 | Subscribers | チャンネル登録者数 | 10000 |
+| 4 | Video Count | 動画数 | 50 |
+| 5 | View Count | 総再生回数 | 100000 |

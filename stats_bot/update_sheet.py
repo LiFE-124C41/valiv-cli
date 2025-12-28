@@ -89,13 +89,14 @@ def main():
         
         try:
             # ワークシートの取得または作成
+            # ワークシートの取得または作成
             try:
-                sheet = spreadsheet.worksheet(member_id)
+                sheet = spreadsheet.worksheet("daily_stats")
             except gspread.exceptions.WorksheetNotFound:
-                print(f"ワークシート '{member_id}' を作成します。")
-                sheet = spreadsheet.add_worksheet(title=member_id, rows=1000, cols=10)
+                print(f"ワークシート 'daily_stats' を作成します。")
+                sheet = spreadsheet.add_worksheet(title="daily_stats", rows=1000, cols=10)
                 # ヘッダー行を追加
-                sheet.append_row(["Date", "Subscribers", "Video Count", "View Count"])
+                sheet.append_row(["Date", "Member ID", "Name", "Subscribers", "Video Count", "View Count"])
 
             response = youtube.channels().list(
                 part='statistics',
@@ -114,9 +115,8 @@ def main():
 
             print(f"取得成功: {name} ({member_id}) - 登録者数: {subscribers}, 動画数: {video_count}, 総再生数: {view_count}")
 
-            # 最終行にデータを追加 [日付, 登録者数, 動画数, 総再生数]
-            # IDごとのシートになったので名前カラムは削除してシンプルにしました
-            sheet.append_row([today, subscribers, video_count, view_count], value_input_option='USER_ENTERED')
+            # 最終行にデータを追加 [日付, メンバーID, 名前, 登録者数, 動画数, 総再生数]
+            sheet.append_row([today, member_id, name, subscribers, video_count, view_count], value_input_option='USER_ENTERED')
             
         except Exception as e:
             print(f"[{name}] エラーが発生しました: {e}")
