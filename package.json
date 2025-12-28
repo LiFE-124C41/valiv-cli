@@ -52,6 +52,7 @@
     "open": "^11.0.0",
     "react": "^19.2.1",
     "rss-parser": "^3.13.0",
+    "update-notifier": "^7.3.1",
     "youtube-transcript-plus": "^1.1.1"
   },
   "devDependencies": {
