@@ -34,7 +34,11 @@ export class SummarizeService implements ISummarizeService {
         } catch (e2) {
           const msg1 = e instanceof Error ? e.message : String(e);
           const msg2 = e2 instanceof Error ? e2.message : String(e2);
-          return `字幕が見つかりませんでした。(Video ID: ${cleanVideoId})\nError(JA): ${msg1}\nError(Default): ${msg2}`;
+          console.warn(
+            `Library fetch failed. Trying fallback. JA: ${msg1}, Default: ${msg2}`,
+          );
+          // Do not return here, let it fall through to fallback logic
+          transcriptItems = [];
         }
       }
 
@@ -64,7 +68,13 @@ export class SummarizeService implements ISummarizeService {
         return `字幕データが見つかりませんでした。(Video ID: ${cleanVideoId}) - Library returned empty`;
       }
 
-      const fullText = transcriptItems.map((item) => item.text).join(' ');
+      const fullText = transcriptItems
+        .map((item) => {
+          // youtube-transcript-plus returns offset in seconds
+          const timestamp = this.formatTimestamp(item.offset);
+          return `[${timestamp}] ${item.text}`;
+        })
+        .join('\n');
 
       return await this.generateSummaryWithGemini(apiKey, fullText, onProgress);
     } catch (error) {
@@ -76,6 +86,21 @@ export class SummarizeService implements ISummarizeService {
       }
       return `要約中にエラーが発生しました: ${errorMessage}`;
     }
+  }
+
+  private formatTimestamp(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+
+    const mm = String(m).padStart(2, '0');
+    const ss = String(s).padStart(2, '0');
+
+    if (h > 0) {
+      const hh = String(h).padStart(2, '0');
+      return `${hh}:${mm}:${ss}`;
+    }
+    return `${mm}:${ss}`;
   }
 
   private generatePrompt(transcript: string): string {
@@ -101,17 +126,20 @@ export class SummarizeService implements ISummarizeService {
 
 出力フォーマット（Markdown形式）:
 
+**重要: すべての項目に必ずタイムスタンプ [MM:SS] または [HH:MM:SS] を付けてください。**
+
 ### 📺 配信概要
 (配信の全体的なテーマ、何をしたか、雑談のメインテーマなどを2-3行で要約)
 
 ### ✨ 見どころ・ハイライト
 (特に面白かったシーン、可愛かった発言、盛り上がった瞬間などを箇条書きで3〜5点抽出)
--
--
--
+- [MM:SS] 内容...
+- [MM:SS] 内容...
+- [MM:SS] 内容...
 
 ### 🎵 セットリスト (歌枠・カラオケの場合のみ)
 (歌唱された楽曲があればリストアップしてください。なければ「なし」と記載するか、このセクションを省略してください)
+- [MM:SS] 曲名 / アーティスト
 
 ### 📢 告知・重要事項
 (今後の予定、グッズ情報、イベント告知などがあれば記載)
@@ -200,10 +228,15 @@ ${transcript}
     return events
       .map((event) => {
         if (!event.segs) return '';
+        // event.tStartMs contains start time in ms
+        const startTimeMs = event.tStartMs || 0;
+        const timestamp = this.formatTimestamp(startTimeMs / 1000);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return event.segs.map((seg: any) => seg.utf8).join('');
+        const text = event.segs.map((seg: any) => seg.utf8).join('');
+        return `[${timestamp}] ${text}`;
       })
-      .join(' ')
-      .replace(/\s+/g, ' '); // 余分な空白削除
+      .join('\n')
+      .replace(/\n\s+/g, '\n'); // Maintain structure but clean excessive spaces
   }
 }

@@ -2,7 +2,14 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Text, Box, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import SelectInput from 'ink-select-input';
+import { marked } from 'marked';
+import TerminalRenderer from 'marked-terminal';
 import fs from 'fs';
+
+marked.setOptions({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderer: new TerminalRenderer() as any,
+});
 import {
   IConfigRepository,
   IActivityService,
@@ -358,6 +365,117 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ItemComponent: React.FC<any> = React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ({ isSelected, label, value }: any) => {
+      if (value === 'next_page' || value === 'prev_page') {
+        return (
+          <Text color={isSelected ? 'blue' : undefined}>
+            {isSelected ? '> ' : '  '}
+            {label}
+          </Text>
+        );
+      }
+
+      const activity = activities.find((a) => a.url === value);
+      const authorColor = disableColor
+        ? 'green'
+        : activity?.author?.color || 'green';
+
+      // Construct details text again here since we are not parsing label anymore
+      let detailsText = '';
+      if (activity) {
+        if (activity.status === 'live') {
+          const viewers = activity.concurrentViewers
+            ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
+            : 'Live';
+          const likes = activity.likeCount
+            ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+            : '';
+          detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
+        } else {
+          const likes = activity.likeCount
+            ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+            : '';
+          detailsText = activity.views
+            ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
+            : ` (${activity.timestamp.toLocaleDateString()})`;
+        }
+      }
+
+      const symbol = activity?.author?.symbol
+        ? `${activity.author.symbol} `
+        : '';
+      const authorName = activity?.author?.name || 'Unknown';
+
+      return (
+        <Box flexDirection="column" marginLeft={1}>
+          <Box>
+            <Text color="blue">{isSelected ? '> ' : '  '}</Text>
+            <Text color={authorColor} bold>
+              {symbol}
+              {authorName}
+            </Text>
+          </Box>
+          <Box marginLeft={2}>
+            <Text color={isSelected ? 'blue' : undefined}>
+              {activity?.title}
+              {detailsText}
+            </Text>
+          </Box>
+        </Box>
+      );
+    };
+  }, [activities, disableColor]);
+
+  const items = React.useMemo(() => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedActivities = activities.slice(startIndex, endIndex);
+
+    const list = paginatedActivities.map((activity) => {
+      let detailsText = '';
+      if (activity.status === 'live') {
+        const viewers = activity.concurrentViewers
+          ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
+          : 'Live';
+        const likes = activity.likeCount
+          ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+          : '';
+        detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
+      } else {
+        const likes = activity.likeCount
+          ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
+          : '';
+        detailsText = activity.views
+          ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
+          : ` (${activity.timestamp.toLocaleDateString()})`;
+      }
+
+      return {
+        label: `[${activity.author?.name}] ${activity.title}${detailsText}`,
+        value: activity.url,
+      };
+    });
+
+    if (endIndex < activities.length) {
+      list.push({
+        label: 'Next Page >>',
+        value: 'next_page',
+      });
+    }
+
+    if (page > 1) {
+      list.push({
+        label: '<< Previous Page',
+        value: 'prev_page',
+      });
+    }
+
+    return list;
+  }, [activities, page]);
+
   if (loading) {
     return (
       <Box padding={1}>
@@ -396,49 +514,6 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     );
   }
 
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedActivities = activities.slice(startIndex, endIndex);
-
-  const items = paginatedActivities.map((activity) => {
-    let detailsText = '';
-    if (activity.status === 'live') {
-      const viewers = activity.concurrentViewers
-        ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
-        : 'Live';
-      const likes = activity.likeCount
-        ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
-        : '';
-      detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
-    } else {
-      const likes = activity.likeCount
-        ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
-        : '';
-      detailsText = activity.views
-        ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
-        : ` (${activity.timestamp.toLocaleDateString()})`;
-    }
-
-    return {
-      label: `[${activity.author?.name}] ${activity.title}${detailsText}`,
-      value: activity.url,
-    };
-  });
-
-  if (endIndex < activities.length) {
-    items.push({
-      label: 'Next Page >>',
-      value: 'next_page',
-    });
-  }
-
-  if (page > 1) {
-    items.push({
-      label: '<< Previous Page',
-      value: 'prev_page',
-    });
-  }
-
   if (isPlayingAudio && playerServiceRef.current) {
     return (
       <AudioPlayer
@@ -463,65 +538,6 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       </Box>
     );
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ItemComponent: React.FC<any> = ({ isSelected, label, value }) => {
-    if (value === 'next_page' || value === 'prev_page') {
-      return (
-        <Text color={isSelected ? 'blue' : undefined}>
-          {isSelected ? '> ' : '  '}
-          {label}
-        </Text>
-      );
-    }
-
-    const activity = activities.find((a) => a.url === value);
-    const authorColor = disableColor
-      ? 'green'
-      : activity?.author?.color || 'green';
-
-    // Construct details text again here since we are not parsing label anymore
-    let detailsText = '';
-    if (activity) {
-      if (activity.status === 'live') {
-        const viewers = activity.concurrentViewers
-          ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
-          : 'Live';
-        const likes = activity.likeCount
-          ? ` | 👍 ${parseInt(activity.likeCount).toLocaleString()}`
-          : '';
-        detailsText = ` 🔴 [LIVE] (${viewers}${likes})`;
-      } else {
-        const likes = activity.likeCount
-          ? `, 👍 ${parseInt(activity.likeCount).toLocaleString()}`
-          : '';
-        detailsText = activity.views
-          ? ` (${activity.views.toLocaleString()} views${likes}, ${activity.timestamp.toLocaleDateString()})`
-          : ` (${activity.timestamp.toLocaleDateString()})`;
-      }
-    }
-
-    const symbol = activity?.author?.symbol ? `${activity.author.symbol} ` : '';
-    const authorName = activity?.author?.name || 'Unknown';
-
-    return (
-      <Box flexDirection="column" marginLeft={1}>
-        <Box>
-          <Text color="blue">{isSelected ? '> ' : '  '}</Text>
-          <Text color={authorColor} bold>
-            {symbol}
-            {authorName}
-          </Text>
-        </Box>
-        <Box marginLeft={2}>
-          <Text color={isSelected ? 'blue' : undefined}>
-            {activity?.title}
-            {detailsText}
-          </Text>
-        </Box>
-      </Box>
-    );
-  };
 
   return (
     <Box flexDirection="column" padding={1}>
@@ -553,7 +569,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
           borderColor="magenta"
           padding={1}
         >
-          <Text>{summaryText}</Text>
+          <Text>{marked.parse(summaryText) as string}</Text>
         </Box>
       )}
     </Box>
