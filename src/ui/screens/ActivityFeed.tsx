@@ -367,6 +367,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ItemComponent: React.FC<any> = React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ({ isSelected, label, value }: any) => {
       if (value === 'next_page' || value === 'prev_page') {
         return (
@@ -403,7 +404,9 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         }
       }
 
-      const symbol = activity?.author?.symbol ? `${activity.author.symbol} ` : '';
+      const symbol = activity?.author?.symbol
+        ? `${activity.author.symbol} `
+        : '';
       const authorName = activity?.author?.name || 'Unknown';
 
       return (
@@ -510,8 +513,6 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       </Box>
     );
   }
-
-
 
   if (isPlayingAudio && playerServiceRef.current) {
     return (

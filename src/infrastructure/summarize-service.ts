@@ -34,7 +34,9 @@ export class SummarizeService implements ISummarizeService {
         } catch (e2) {
           const msg1 = e instanceof Error ? e.message : String(e);
           const msg2 = e2 instanceof Error ? e2.message : String(e2);
-          console.warn(`Library fetch failed. Trying fallback. JA: ${msg1}, Default: ${msg2}`);
+          console.warn(
+            `Library fetch failed. Trying fallback. JA: ${msg1}, Default: ${msg2}`,
+          );
           // Do not return here, let it fall through to fallback logic
           transcriptItems = [];
         }
