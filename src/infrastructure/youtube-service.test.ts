@@ -37,6 +37,16 @@ describe('YouTubeService', () => {
     service = new YouTubeService(cacheRepoMock);
   });
 
+  it('should initialize Parser with User-Agent header', () => {
+    expect(Parser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'User-Agent': expect.stringContaining('Mozilla/5.0'),
+        }),
+      }),
+    );
+  });
+
   describe('getActivities', () => {
     const creator: Creator = {
       id: '1',
