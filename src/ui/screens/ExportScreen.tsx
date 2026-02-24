@@ -141,5 +141,4 @@ const ExportScreen: React.FC<Props> = ({
   );
 };
 
-module.exports = ExportScreen;
 export default ExportScreen;

@@ -14,6 +14,8 @@ export class SummarizeService implements ISummarizeService {
     videoId: string,
     apiKey: string,
     onProgress?: (message: string) => void,
+    creatorId: string = 'unknown',
+    videoTitle?: string,
   ): Promise<string> {
     // IDのクレンジング (RSS由来の yt:video: を削除)
     const cleanVideoId = videoId.replace(/^yt:video:/, '');
@@ -27,7 +29,7 @@ export class SummarizeService implements ISummarizeService {
       // ※現状のシグネチャ `summarizeVideo(videoId, apiKey, onProgress)` を維持するため
       const cacheEntry = this.cacheRepo.getTranscript(cleanVideoId);
       if (cacheEntry) {
-        if (onProgress) onProgress('Using cached transcript...');
+        if (onProgress) onProgress('✅ Loaded transcript from cache...');
         const fullText = cacheEntry.transcript
           .map((item) => {
             const timestamp = this.formatTimestamp(item.offset);
@@ -73,7 +75,12 @@ export class SummarizeService implements ISummarizeService {
         // ライブラリで取得できなかった場合、自前実装のフォールバックを試みる
         try {
           if (onProgress) onProgress('Fetching transcript (fallback mode)...');
-          const manualText = await this.fetchManualTranscript(cleanVideoId);
+          const manualText = await this.fetchManualTranscript(
+            cleanVideoId,
+            creatorId,
+            onProgress,
+            videoTitle
+          );
           if (manualText) {
             // 手動取得成功
             return await this.generateSummaryWithGemini(
@@ -97,15 +104,13 @@ export class SummarizeService implements ISummarizeService {
 
       // 取得した字幕データをキャッシュに保存
       try {
-        const textToSave: TranscriptText[] = transcriptItems.map(
-          (item: any) => ({
-            text: item.text,
-            offset: item.offset,
-            duration: item.duration,
-          }),
-        );
-        // ここでのcreatorIdは 'unknown' としますが、できればActivitiesから引くのが理想です
-        this.cacheRepo.saveTranscript('unknown', cleanVideoId, textToSave);
+        const textToSave: TranscriptText[] = transcriptItems.map((item: any) => ({
+          text: item.text,
+          offset: item.offset,
+          duration: item.duration,
+        }));
+        this.cacheRepo.saveTranscript(creatorId, cleanVideoId, textToSave, videoTitle);
+        if (onProgress) onProgress(`💾 Saved transcript to cache (Creator: ${creatorId})`);
       } catch (saveCacheErr) {
         console.warn('Failed to save transcript cache', saveCacheErr);
       }
@@ -217,7 +222,12 @@ ${transcript}
 
     return text;
   }
-  private async fetchManualTranscript(videoId: string): Promise<string> {
+  private async fetchManualTranscript(
+    videoId: string,
+    creatorId: string = 'unknown',
+    onProgress?: (message: string) => void,
+    videoTitle?: string,
+  ): Promise<string> {
     const res = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
       headers: {
         'User-Agent':
@@ -283,7 +293,8 @@ ${transcript}
     });
 
     try {
-      this.cacheRepo.saveTranscript('unknown', videoId, mappedTranscript);
+      this.cacheRepo.saveTranscript(creatorId, videoId, mappedTranscript, videoTitle);
+      if (onProgress) onProgress(`💾 Saved transcript to cache (Fallback / Creator: ${creatorId})`);
     } catch (saveCacheErr) {
       console.warn('Failed to save manual transcript cache', saveCacheErr);
     }
