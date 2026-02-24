@@ -115,6 +115,23 @@ program
     );
   });
 
+program
+  .command('export')
+  .description('Export cached transcripts')
+  .option('-o, --output <dir>', 'Output directory', './valiv-exports')
+  .option('--id <creatorId>', 'Export transcripts for a specific creator')
+  .option('--format <format>', 'Output format (md, json, text)', 'md')
+  .action((options) => {
+    render(
+      <App
+        command="export"
+        outputDir={options.output}
+        filterId={options.id}
+        format={options.format}
+      />,
+    );
+  });
+
 program.parse(process.argv);
 
 if (!process.argv.slice(2).length) {

@@ -34,6 +34,15 @@ vi.mock('@google/generative-ai', () => {
   };
 });
 
+vi.mock('./transcript-cache-repository.js', () => {
+  return {
+    TranscriptCacheRepository: class {
+      getTranscript = vi.fn().mockReturnValue(null);
+      saveTranscript = vi.fn();
+    },
+  };
+});
+
 describe('SummarizeService', () => {
   let service: SummarizeService;
 

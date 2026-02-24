@@ -33,6 +33,8 @@ export interface ISummarizeService {
     videoId: string,
     apiKey: string,
     onProgress?: (message: string) => void,
+    creatorId?: string,
+    videoTitle?: string,
   ): Promise<string>;
 }
 

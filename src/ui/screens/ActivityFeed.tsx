@@ -334,9 +334,15 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         setSummaryStatus('Initializing summary...'); // Initial status
 
         summarizeService
-          .summarizeVideo(selectedActivity.id, apiKey, (msg) => {
-            setSummaryStatus(msg);
-          })
+          .summarizeVideo(
+            selectedActivity.id,
+            apiKey,
+            (msg) => {
+              setSummaryStatus(msg);
+            },
+            selectedActivity.author?.id || filterId || 'unknown',
+            selectedActivity.title,
+          )
           .then((text) =>
             setSummaryText(`[Summary: ${selectedActivity.title}]\n${text}`),
           )
