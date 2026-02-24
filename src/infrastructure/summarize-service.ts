@@ -44,7 +44,11 @@ export class SummarizeService implements ISummarizeService {
       }
 
       // 2. キャッシュがない場合はAPI等で取得 (まず日本語)
-      let transcriptItems: any[] = [];
+      let transcriptItems: {
+        text: string;
+        duration: number;
+        offset: number;
+      }[] = [];
       try {
         transcriptItems = await YoutubeTranscript.fetchTranscript(
           cleanVideoId,
@@ -79,7 +83,7 @@ export class SummarizeService implements ISummarizeService {
             cleanVideoId,
             creatorId,
             onProgress,
-            videoTitle
+            videoTitle,
           );
           if (manualText) {
             // 手動取得成功
@@ -104,19 +108,27 @@ export class SummarizeService implements ISummarizeService {
 
       // 取得した字幕データをキャッシュに保存
       try {
-        const textToSave: TranscriptText[] = transcriptItems.map((item: any) => ({
-          text: item.text,
-          offset: item.offset,
-          duration: item.duration,
-        }));
-        this.cacheRepo.saveTranscript(creatorId, cleanVideoId, textToSave, videoTitle);
-        if (onProgress) onProgress(`💾 Saved transcript to cache (Creator: ${creatorId})`);
+        const textToSave: TranscriptText[] = transcriptItems.map(
+          (item: { text: string; duration: number; offset: number }) => ({
+            text: item.text,
+            offset: item.offset,
+            duration: item.duration,
+          }),
+        );
+        this.cacheRepo.saveTranscript(
+          creatorId,
+          cleanVideoId,
+          textToSave,
+          videoTitle,
+        );
+        if (onProgress)
+          onProgress(`💾 Saved transcript to cache (Creator: ${creatorId})`);
       } catch (saveCacheErr) {
         console.warn('Failed to save transcript cache', saveCacheErr);
       }
 
       const fullText = transcriptItems
-        .map((item: any) => {
+        .map((item: { text: string; offset: number }) => {
           // youtube-transcript-plus returns offset in seconds
           const timestamp = this.formatTimestamp(item.offset);
           return `[${timestamp}] ${item.text}`;
@@ -293,8 +305,16 @@ ${transcript}
     });
 
     try {
-      this.cacheRepo.saveTranscript(creatorId, videoId, mappedTranscript, videoTitle);
-      if (onProgress) onProgress(`💾 Saved transcript to cache (Fallback / Creator: ${creatorId})`);
+      this.cacheRepo.saveTranscript(
+        creatorId,
+        videoId,
+        mappedTranscript,
+        videoTitle,
+      );
+      if (onProgress)
+        onProgress(
+          `💾 Saved transcript to cache (Fallback / Creator: ${creatorId})`,
+        );
     } catch (saveCacheErr) {
       console.warn('Failed to save manual transcript cache', saveCacheErr);
     }

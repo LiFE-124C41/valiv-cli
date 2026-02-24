@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TranscriptCacheRepository } from './transcript-cache-repository.js';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as os from 'os';
 
 vi.mock('fs');
@@ -9,7 +8,6 @@ vi.mock('os');
 
 describe('TranscriptCacheRepository', () => {
   let repo: TranscriptCacheRepository;
-  const mockConfigDir = '/mock/.config';
 
   beforeEach(() => {
     vi.spyOn(os, 'homedir').mockReturnValue('/mock');

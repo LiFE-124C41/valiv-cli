@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SummarizeService } from './summarize-service.js';
-import { TranscriptCacheRepository } from './transcript-cache-repository.js';
 
 // Mock dependencies
 const mocks = vi.hoisted(() => {

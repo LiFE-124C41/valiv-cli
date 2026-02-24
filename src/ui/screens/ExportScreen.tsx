@@ -67,7 +67,7 @@ const ExportScreen: React.FC<Props> = ({
 
             const ext =
               format === 'json' ? 'json' : format === 'text' ? 'txt' : 'md';
-            const fileName = `${creator.id}_${videoId}.${ext}`;
+            const fileName = `${creator.id}_${safeTitle}.${ext}`;
             const filePath = path.join(targetDir, fileName);
 
             let content = '';
