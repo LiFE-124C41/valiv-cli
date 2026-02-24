@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SummarizeService } from './summarize-service.js';
+import { TranscriptCacheRepository } from './transcript-cache-repository.js';
 
 // Mock dependencies
 const mocks = vi.hoisted(() => {
@@ -31,6 +32,15 @@ vi.mock('youtube-transcript-plus', () => {
 vi.mock('@google/generative-ai', () => {
   return {
     GoogleGenerativeAI: mocks.GoogleGenerativeAI,
+  };
+});
+
+vi.mock('./transcript-cache-repository.js', () => {
+  return {
+    TranscriptCacheRepository: class {
+      getTranscript = vi.fn().mockReturnValue(null);
+      saveTranscript = vi.fn();
+    },
   };
 });
 

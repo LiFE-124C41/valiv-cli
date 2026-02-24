@@ -1,8 +1,15 @@
 import { ISummarizeService } from '../domain/interfaces.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { YoutubeTranscript } from 'youtube-transcript-plus';
+import { TranscriptCacheRepository } from './transcript-cache-repository.js';
+import { TranscriptText } from '../domain/models.js';
 
 export class SummarizeService implements ISummarizeService {
+  private cacheRepo: TranscriptCacheRepository;
+
+  constructor() {
+    this.cacheRepo = new TranscriptCacheRepository();
+  }
   async summarizeVideo(
     videoId: string,
     apiKey: string,
@@ -14,8 +21,28 @@ export class SummarizeService implements ISummarizeService {
     try {
       if (onProgress) onProgress('Fetching transcript...');
 
-      // まず日本語の字幕取得を試みる
-      let transcriptItems;
+      // 1. キャッシュの確認
+      // クリエイターIDを引数で受け取る仕様になっていないため、'unknown'として扱う。
+      // ただし、キャッシュ制限の観点から出来ればクリエイターIDを渡したいが今回は動画単位で管理する。
+      // ※現状のシグネチャ `summarizeVideo(videoId, apiKey, onProgress)` を維持するため
+      const cacheEntry = this.cacheRepo.getTranscript(cleanVideoId);
+      if (cacheEntry) {
+        if (onProgress) onProgress('Using cached transcript...');
+        const fullText = cacheEntry.transcript
+          .map((item) => {
+            const timestamp = this.formatTimestamp(item.offset);
+            return `[${timestamp}] ${item.text}`;
+          })
+          .join('\n');
+        return await this.generateSummaryWithGemini(
+          apiKey,
+          fullText,
+          onProgress,
+        );
+      }
+
+      // 2. キャッシュがない場合はAPI等で取得 (まず日本語)
+      let transcriptItems: any[] = [];
       try {
         transcriptItems = await YoutubeTranscript.fetchTranscript(
           cleanVideoId,
@@ -68,8 +95,23 @@ export class SummarizeService implements ISummarizeService {
         return `字幕データが見つかりませんでした。(Video ID: ${cleanVideoId}) - Library returned empty`;
       }
 
+      // 取得した字幕データをキャッシュに保存
+      try {
+        const textToSave: TranscriptText[] = transcriptItems.map(
+          (item: any) => ({
+            text: item.text,
+            offset: item.offset,
+            duration: item.duration,
+          }),
+        );
+        // ここでのcreatorIdは 'unknown' としますが、できればActivitiesから引くのが理想です
+        this.cacheRepo.saveTranscript('unknown', cleanVideoId, textToSave);
+      } catch (saveCacheErr) {
+        console.warn('Failed to save transcript cache', saveCacheErr);
+      }
+
       const fullText = transcriptItems
-        .map((item) => {
+        .map((item: any) => {
           // youtube-transcript-plus returns offset in seconds
           const timestamp = this.formatTimestamp(item.offset);
           return `[${timestamp}] ${item.text}`;
@@ -225,16 +267,31 @@ ${transcript}
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const events = jsonData.events as any[];
 
-    return events
-      .map((event) => {
-        if (!event.segs) return '';
-        // event.tStartMs contains start time in ms
-        const startTimeMs = event.tStartMs || 0;
-        const timestamp = this.formatTimestamp(startTimeMs / 1000);
+    const mappedTranscript: TranscriptText[] = [];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const text = event.segs.map((seg: any) => seg.utf8).join('');
-        return `[${timestamp}] ${text}`;
+    events.forEach((event) => {
+      if (!event.segs) return;
+      const startTimeMs = event.tStartMs || 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const text = event.segs.map((seg: any) => seg.utf8).join('');
+
+      mappedTranscript.push({
+        text,
+        offset: startTimeMs / 1000,
+        duration: (event.dDurationMs || 0) / 1000,
+      });
+    });
+
+    try {
+      this.cacheRepo.saveTranscript('unknown', videoId, mappedTranscript);
+    } catch (saveCacheErr) {
+      console.warn('Failed to save manual transcript cache', saveCacheErr);
+    }
+
+    return mappedTranscript
+      .map((item) => {
+        const timestamp = this.formatTimestamp(item.offset);
+        return `[${timestamp}] ${item.text}`;
       })
       .join('\n')
       .replace(/\n\s+/g, '\n'); // Maintain structure but clean excessive spaces

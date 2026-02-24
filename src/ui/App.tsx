@@ -13,6 +13,7 @@ import ActivityFeedScreen from './screens/ActivityFeed.js';
 import ScheduleListScreen from './screens/ScheduleList.js';
 import AddCreatorScreen from './screens/AddCreator.js';
 import RemoveCreator from './RemoveCreator.js';
+import ExportScreen from './screens/ExportScreen.js';
 
 interface AppProps {
   command: string;
@@ -27,9 +28,18 @@ interface AppProps {
   disableColor?: boolean;
   clean?: boolean;
   summary?: boolean;
+  outputDir?: string;
+  format?: string;
 }
 
-type ScreenName = 'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule';
+type ScreenName =
+  | 'init'
+  | 'add'
+  | 'remove'
+  | 'list'
+  | 'check'
+  | 'schedule'
+  | 'export';
 
 const App: React.FC<AppProps> = ({
   command,
@@ -44,6 +54,8 @@ const App: React.FC<AppProps> = ({
   disableColor,
   clean,
   summary,
+  outputDir,
+  format,
 }) => {
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
@@ -223,6 +235,15 @@ const App: React.FC<AppProps> = ({
           refresh={refresh}
           week={week}
           disableColor={disableColor}
+        />
+      );
+    case 'export':
+      return (
+        <ExportScreen
+          configRepo={configRepo}
+          filterId={screenProps.filterId}
+          outputDir={outputDir || './valiv-exports'}
+          format={format || 'md'}
         />
       );
     default:

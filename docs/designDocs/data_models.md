@@ -136,6 +136,34 @@ export interface ScheduleEvent {
 }
 ```
 
+### TranscriptCacheEntry
+取得したYouTube動画の字幕データのキャッシュ構成を表します。
+実際のファイルは `~/.config/valiv/transcripts-cache/data/<videoId>.json` のような形で個別に保存され、インデックスファイル（`index.json`）で最大50件の管理が行われます。
+
+```typescript
+export interface TranscriptText {
+  /** テキストデータ */
+  text: string;
+  /** 開始時間（ミリ秒、または秒。実装ライブラリに依存） */
+  offset: number;
+  /** 再生時間（ミリ秒、または秒。実装ライブラリに依存） */
+  duration: number;
+}
+
+export interface TranscriptCacheEntry {
+  /** 動画ID */
+  videoId: string;
+  /** クリエイターID */
+  creatorId: string;
+  /** 動画タイトル（表示用） */
+  videoTitle?: string;
+  /** 字幕データ（配列） */
+  transcript: TranscriptText[];
+  /** キャッシュ保存日時 (ISO 8601 string) */
+  cachedAt: string;
+}
+```
+
 ### ConfigSchema
 設定ファイルのスキーマ定義です。
 
