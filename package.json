@@ -47,7 +47,7 @@
     "ink-select-input": "^6.2.0",
     "ink-spinner": "^5.0.0",
     "ink-text-input": "^6.0.0",
-    "marked": "^15.0.0",
+    "marked": "^17.0.4",
     "marked-terminal": "^7.3.0",
     "node-ical": "^0.25.4",
     "node-mpv": "^1.5.0",
