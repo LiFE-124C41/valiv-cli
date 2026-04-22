@@ -26,7 +26,10 @@ describe('Logger', () => {
     logger.info('test info');
 
     expect(consoleSpy).toHaveBeenCalledWith('test info');
-    expect(fsSpy).toHaveBeenCalledWith(expectedLogPath, expect.stringContaining('[INFO] test info'));
+    expect(fsSpy).toHaveBeenCalledWith(
+      expectedLogPath,
+      expect.stringContaining('[INFO] test info'),
+    );
   });
 
   it('error should print friendly message to console.error and write stack trace to file', () => {
@@ -38,7 +41,9 @@ describe('Logger', () => {
     logger.error('Failed to fetch', mockError);
 
     // Should include friendly message
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch 時間を置いて再度お試し下さい。');
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Failed to fetch 時間を置いて再度お試し下さい。',
+    );
     // File should contain original error detail
     expect(fsSpy).toHaveBeenCalledWith(
       expectedLogPath,

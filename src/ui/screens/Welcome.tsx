@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, Box, useInput } from 'ink';
 import Spinner from 'ink-spinner';
-import { IConfigRepository, ILogger } from '../../domain/interfaces.js';
+import { IConfigRepository } from '../../domain/interfaces.js';
 import { VALIV_MEMBERS } from '../../domain/constants.js';
 import { YouTubeService } from '../../infrastructure/youtube-service.js';
 
@@ -14,13 +14,11 @@ const getWelcomeMessage = () => {
 interface WelcomeScreenProps {
   configRepo: IConfigRepository;
   youtubeService: YouTubeService;
-  logger: ILogger;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   configRepo,
   youtubeService,
-  logger,
 }) => {
   const [loading, setLoading] = useState(true);
   const [updatedMembers, setUpdatedMembers] = useState<typeof VALIV_MEMBERS>(

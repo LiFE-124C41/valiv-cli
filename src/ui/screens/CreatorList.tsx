@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, Box, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
-import {
-  IConfigRepository,
-  ILogger,
-} from '../../domain/interfaces.js';
+import { IConfigRepository, ILogger } from '../../domain/interfaces.js';
 import { Creator, CreatorStatistics } from '../../domain/models.js';
 import { SpreadsheetService } from '../../infrastructure/spreadsheet-service.js';
 import { formatSubscriberCount } from '../../utils/stringUtils.js';

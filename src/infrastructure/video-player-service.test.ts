@@ -52,7 +52,7 @@ describe('VideoPlayerService', () => {
       error: vi.fn(),
       debug: vi.fn(),
     };
-    service = new VideoPlayerService(loggerMock as any);
+    service = new VideoPlayerService(loggerMock as unknown as ILogger);
   });
 
   afterEach(() => {

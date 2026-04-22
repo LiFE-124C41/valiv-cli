@@ -2,20 +2,18 @@ import React, { useState } from 'react';
 import { Text, Box, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import Spinner from 'ink-spinner';
-import { IConfigRepository, ILogger } from '../../domain/interfaces.js';
+import { IConfigRepository } from '../../domain/interfaces.js';
 import { Creator } from '../../domain/models.js';
 import { YouTubeService } from '../../infrastructure/youtube-service.js';
 
 interface AddCreatorScreenProps {
   configRepo: IConfigRepository;
   youtubeService: YouTubeService;
-  logger: ILogger;
 }
 
 const AddCreatorScreen: React.FC<AddCreatorScreenProps> = ({
   configRepo,
   youtubeService,
-  logger,
 }) => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');

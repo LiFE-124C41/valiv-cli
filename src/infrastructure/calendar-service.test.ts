@@ -53,7 +53,7 @@ describe('CalendarService', () => {
       cacheRepoMock as unknown as ICacheRepository,
       configRepoMock as unknown as IConfigRepository,
       youtubeServiceMock as unknown as YouTubeService,
-      loggerMock as any,
+      loggerMock as unknown as ILogger,
     );
   });
 

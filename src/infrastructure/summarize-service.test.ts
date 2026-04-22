@@ -54,7 +54,7 @@ describe('SummarizeService', () => {
       error: vi.fn(),
       debug: vi.fn(),
     };
-    service = new SummarizeService(loggerMock as any);
+    service = new SummarizeService(loggerMock as unknown as ILogger);
     vi.clearAllMocks();
     mocks.fetchTranscript.mockReset();
     mocks.generateContent.mockReset();

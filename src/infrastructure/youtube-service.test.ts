@@ -41,7 +41,10 @@ describe('YouTubeService', () => {
       error: vi.fn(),
       debug: vi.fn(),
     };
-    service = new YouTubeService(cacheRepoMock, loggerMock as any);
+    service = new YouTubeService(
+      cacheRepoMock,
+      loggerMock as unknown as ILogger,
+    );
   });
 
   it('should initialize Parser with User-Agent header', () => {

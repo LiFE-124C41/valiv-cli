@@ -3,6 +3,7 @@ import axios from 'axios';
 import { SpreadsheetService } from './spreadsheet-service.js';
 
 import { Creator } from '../domain/models.js';
+import { ICacheRepository, ILogger } from '../domain/interfaces.js';
 
 vi.mock('axios');
 
@@ -33,7 +34,10 @@ describe('SpreadsheetService', () => {
       error: vi.fn(),
       debug: vi.fn(),
     };
-    service = new SpreadsheetService(mockCacheRepo as any, mockLogger as any);
+    service = new SpreadsheetService(
+      mockCacheRepo as unknown as ICacheRepository,
+      mockLogger as unknown as ILogger,
+    );
     vi.resetAllMocks();
   });
 

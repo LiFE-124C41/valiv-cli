@@ -197,7 +197,6 @@ const App: React.FC<AppProps> = ({
         <WelcomeScreen
           configRepo={configRepo}
           youtubeService={youtubeService}
-          logger={logger}
         />
       );
     case 'add':
@@ -205,7 +204,6 @@ const App: React.FC<AppProps> = ({
         <AddCreatorScreen
           configRepo={configRepo}
           youtubeService={youtubeService}
-          logger={logger}
         />
       );
     case 'remove':
