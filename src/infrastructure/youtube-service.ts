@@ -1,6 +1,10 @@
 import Parser from 'rss-parser';
 import { Activity, Creator } from '../domain/models.js';
-import { IActivityService, ICacheRepository } from '../domain/interfaces.js';
+import {
+  IActivityService,
+  ICacheRepository,
+  ILogger,
+} from '../domain/interfaces.js';
 
 export interface YouTubeChannelStatistics {
   subscriberCount: string;
@@ -58,7 +62,10 @@ interface YouTubeVideoResponse {
 export class YouTubeService implements IActivityService {
   private parser: Parser;
 
-  constructor(private cacheRepo: ICacheRepository) {
+  constructor(
+    private cacheRepo: ICacheRepository,
+    private logger: ILogger,
+  ) {
     this.parser = new Parser({
       headers: {
         'User-Agent':
@@ -118,8 +125,8 @@ export class YouTubeService implements IActivityService {
             };
           });
         } catch (error) {
-          console.error(
-            `Failed to fetch upcoming streams for ${creator.name}:`,
+          this.logger.error(
+            `Failed to fetch upcoming streams for ${creator.name}.`,
             error,
           );
           return [];
@@ -179,8 +186,8 @@ export class YouTubeService implements IActivityService {
             };
           });
         } catch (error) {
-          console.error(
-            `Failed to fetch live streams for ${creator.name}:`,
+          this.logger.error(
+            `Failed to fetch live streams for ${creator.name}.`,
             error,
           );
           return [];
@@ -252,8 +259,8 @@ export class YouTubeService implements IActivityService {
             } as Activity;
           });
         } catch (error) {
-          console.error(
-            `Failed to fetch YouTube feed for ${creator.name}:`,
+          this.logger.error(
+            `Failed to fetch YouTube feed for ${creator.name}.`,
             error,
           );
           return [];
@@ -361,7 +368,7 @@ export class YouTubeService implements IActivityService {
         return activity;
       });
     } catch (error) {
-      console.error('Failed to enrich activities with API:', error);
+      this.logger.error('Failed to enrich activities with API.', error);
       return activities;
     }
   }
@@ -375,7 +382,10 @@ export class YouTubeService implements IActivityService {
         title: feed.title || '',
       };
     } catch (error) {
-      console.error(`Failed to fetch channel info for ${channelId}:`, error);
+      this.logger.error(
+        `Failed to fetch channel info for ${channelId}.`,
+        error,
+      );
       return null;
     }
   }
@@ -445,7 +455,7 @@ export class YouTubeService implements IActivityService {
       this.cacheRepo.set(cacheKey, result);
       return result;
     } catch (error) {
-      console.error('Failed to fetch subscriber counts:', error);
+      this.logger.error('Failed to fetch subscriber counts.', error);
       // Return cached data if available even if expired, as fallback?
       if (cached) return cached.data;
       return {};

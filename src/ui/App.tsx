@@ -6,7 +6,7 @@ import { YouTubeService } from '../infrastructure/youtube-service.js';
 import { CalendarService } from '../infrastructure/calendar-service.js';
 import { SpreadsheetService } from '../infrastructure/spreadsheet-service.js';
 import { TwitchService } from '../infrastructure/twitch-service.js';
-import { SummarizeService } from '../infrastructure/summarize-service.js';
+import { Logger } from '../infrastructure/logger.js';
 import WelcomeScreen from './screens/Welcome.js';
 import CreatorListScreen from './screens/CreatorList.js';
 import ActivityFeedScreen from './screens/ActivityFeed.js';
@@ -60,22 +60,32 @@ const App: React.FC<AppProps> = ({
   // Dependency Injection (Simple)
   const [configRepo] = useState(() => new ConfigRepository());
   const [cacheRepo] = useState(() => new CacheRepository());
-  const [youtubeService] = useState(() => new YouTubeService(cacheRepo));
+  const [logger] = useState(() => new Logger(configRepo.getPath()));
+
+  const [youtubeService] = useState(
+    () => new YouTubeService(cacheRepo, logger),
+  );
   const [twitchService] = useState(() => {
     const clientId = configRepo.getTwitchClientId();
     const clientSecret = configRepo.getTwitchClientSecret();
     if (clientId && clientSecret) {
-      return new TwitchService(clientId, clientSecret, cacheRepo);
+      return new TwitchService(clientId, clientSecret, cacheRepo, logger);
     }
     return undefined;
   });
 
   const [calendarService] = useState(
     () =>
-      new CalendarService(cacheRepo, configRepo, youtubeService, twitchService),
+      new CalendarService(
+        cacheRepo,
+        configRepo,
+        youtubeService,
+        logger,
+        twitchService,
+      ),
   );
   const [spreadsheetService] = useState(
-    () => new SpreadsheetService(cacheRepo),
+    () => new SpreadsheetService(cacheRepo, logger),
   );
   const [summarizeService] = useState(() => new SummarizeService());
 
@@ -208,6 +218,7 @@ const App: React.FC<AppProps> = ({
           refresh={refresh}
           onNavigate={navigate}
           disableColor={disableColor}
+          logger={logger}
         />
       );
     case 'check':
@@ -224,6 +235,7 @@ const App: React.FC<AppProps> = ({
           disableColor={disableColor}
           summary={summary}
           summarizeService={summarizeService}
+          logger={logger}
         />
       );
     case 'schedule':

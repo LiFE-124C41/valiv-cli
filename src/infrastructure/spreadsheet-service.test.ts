@@ -3,12 +3,14 @@ import axios from 'axios';
 import { SpreadsheetService } from './spreadsheet-service.js';
 
 import { Creator } from '../domain/models.js';
+import { ICacheRepository, ILogger } from '../domain/interfaces.js';
 
 vi.mock('axios');
 
 describe('SpreadsheetService', () => {
   let service: SpreadsheetService;
   let mockCacheRepo: { get: Mock; set: Mock; clear: Mock; getPath: Mock };
+  let mockLogger: { info: Mock; warn: Mock; error: Mock; debug: Mock };
   const mockSpreadsheetId = 'test-sheet-id';
 
   const mockCreators: Creator[] = [
@@ -26,7 +28,17 @@ describe('SpreadsheetService', () => {
       clear: vi.fn(),
       getPath: vi.fn(),
     };
-    service = new SpreadsheetService(mockCacheRepo);
+    mockLogger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+      getLogPath: vi.fn().mockReturnValue('valiv_debug.log'),
+    };
+    service = new SpreadsheetService(
+      mockCacheRepo as unknown as ICacheRepository,
+      mockLogger as unknown as ILogger,
+    );
     vi.resetAllMocks();
   });
 
@@ -162,6 +174,10 @@ describe('SpreadsheetService', () => {
     const stats = await service.getStatistics(mockSpreadsheetId, mockCreators);
 
     expect(stats).toEqual({});
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Error fetching/parsing spreadsheet'),
+      expect.any(Error),
+    );
   });
 
   it('should handle malformed CSV data', async () => {

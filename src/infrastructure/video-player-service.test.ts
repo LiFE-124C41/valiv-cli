@@ -42,10 +42,18 @@ vi.mock('child_process', () => {
 
 describe('VideoPlayerService', () => {
   let service: VideoPlayerService;
+  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new VideoPlayerService();
+    loggerMock = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+      getLogPath: vi.fn().mockReturnValue('valiv_debug.log'),
+    };
+    service = new VideoPlayerService(loggerMock as unknown as ILogger);
   });
 
   afterEach(() => {

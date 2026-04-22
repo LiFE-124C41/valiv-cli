@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import NodeMpv from 'node-mpv';
 import { promisify } from 'util';
+import { ILogger } from '../domain/interfaces.js';
 
 const execAsync = promisify(exec);
 
@@ -24,6 +25,11 @@ export interface IVideoPlayerService {
 export class VideoPlayerService implements IVideoPlayerService {
   private mpvAvailable: boolean | null = null;
   private mpv: NodeMpv | null = null;
+  private logger: ILogger;
+
+  constructor(logger: ILogger) {
+    this.logger = logger;
+  }
 
   async play(url: string, options?: VideoPlayerOptions): Promise<void> {
     if (this.mpvAvailable === null) {
@@ -46,7 +52,7 @@ export class VideoPlayerService implements IVideoPlayerService {
             mpvArgs.push('--no-video');
           }
           if (options?.debug) {
-            mpvArgs.push('--log-file=valiv_debug.log');
+            mpvArgs.push(`--log-file=${this.logger.getLogPath()}`);
             mpvArgs.push('--msg-level=all=trace');
           }
           // Removed global start/end args to prevent persistence across playlist items
@@ -103,13 +109,13 @@ export class VideoPlayerService implements IVideoPlayerService {
               await this.mpv.setProperty('end', 'none');
             }
           } catch (error) {
-            console.error('Failed to load/seek with MPV:', error);
+            this.logger.error('Failed to load/seek with MPV.', error);
             throw error;
           }
         }
       } catch (error) {
-        console.error(
-          'Failed to play with MPV, falling back to browser:',
+        this.logger.error(
+          'Failed to play with MPV, falling back to browser.',
           error,
         );
         this.fallbackToBrowser(url);
@@ -124,7 +130,7 @@ export class VideoPlayerService implements IVideoPlayerService {
       try {
         await this.mpv.quit();
       } catch (error) {
-        console.error('Failed to stop MPV:', error);
+        this.logger.error('Failed to stop MPV.', error);
       }
       this.mpv = null;
     }

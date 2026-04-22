@@ -25,6 +25,7 @@ describe('CalendarService', () => {
     setCreators: Mock;
   };
   let youtubeServiceMock: { getUpcomingStreams: Mock; getLiveStreams: Mock };
+  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,10 +43,18 @@ describe('CalendarService', () => {
       getUpcomingStreams: vi.fn().mockResolvedValue([]),
       getLiveStreams: vi.fn().mockResolvedValue([]),
     };
+    loggerMock = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+      getLogPath: vi.fn().mockReturnValue('valiv_debug.log'),
+    };
     service = new CalendarService(
       cacheRepoMock as unknown as ICacheRepository,
       configRepoMock as unknown as IConfigRepository,
       youtubeServiceMock as unknown as YouTubeService,
+      loggerMock as unknown as ILogger,
     );
   });
 
@@ -120,14 +129,14 @@ describe('CalendarService', () => {
       (ical.async.fromURL as unknown as Mock).mockRejectedValue(
         new Error('Network Error'),
       );
-      const consoleSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
 
       const schedules = await service.getSchedules([creator]);
 
       expect(schedules).toHaveLength(0);
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to fetch Calendar'),
+        expect.any(Error),
+      );
     });
 
     it('should ignore creators without calendarUrl', async () => {

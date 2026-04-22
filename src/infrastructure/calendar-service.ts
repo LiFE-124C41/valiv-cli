@@ -4,6 +4,7 @@ import {
   ICacheRepository,
   IConfigRepository,
   IScheduleService,
+  ILogger,
 } from '../domain/interfaces.js';
 import { TwitchService } from './twitch-service.js';
 import { YouTubeService } from './youtube-service.js';
@@ -13,6 +14,7 @@ export class CalendarService implements IScheduleService {
     private cacheRepo: ICacheRepository,
     private configRepo: IConfigRepository,
     private youtubeService: YouTubeService,
+    private logger: ILogger,
     private twitchService?: TwitchService,
   ) {}
 
@@ -153,7 +155,10 @@ export class CalendarService implements IScheduleService {
               })
           );
         } catch (error) {
-          console.error(`Failed to fetch Calendar for ${creator.name}:`, error);
+          this.logger.error(
+            `Failed to fetch Calendar for ${creator.name}.`,
+            error,
+          );
           return [];
         }
       });
