@@ -1,9 +1,12 @@
 import axios from 'axios';
 import { Creator, CreatorStatistics } from '../domain/models.js';
-import { ICacheRepository } from '../domain/interfaces.js';
+import { ICacheRepository, ILogger } from '../domain/interfaces.js';
 
 export class SpreadsheetService {
-  constructor(private cacheRepo: ICacheRepository) {}
+  constructor(
+    private cacheRepo: ICacheRepository,
+    private logger: ILogger,
+  ) {}
 
   async getStatistics(
     spreadsheetId: string,
@@ -145,7 +148,7 @@ export class SpreadsheetService {
         };
       }
     } catch (e) {
-      console.error('Error fetching/parsing spreadsheet:', e);
+      this.logger.error('Error fetching/parsing spreadsheet.', e);
       // Fail silently or return empty, depending on requirements, but error log is good
     }
 

@@ -15,6 +15,7 @@ describe('YouTubeService', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockParserInstance: any;
   let cacheRepoMock: { get: Mock; set: Mock; clear: Mock };
+  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,7 +35,13 @@ describe('YouTubeService', () => {
       set: vi.fn(),
       clear: vi.fn(),
     };
-    service = new YouTubeService(cacheRepoMock);
+    loggerMock = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+    };
+    service = new YouTubeService(cacheRepoMock, loggerMock as any);
   });
 
   it('should initialize Parser with User-Agent header', () => {
@@ -97,15 +104,13 @@ describe('YouTubeService', () => {
     it('should handle errors gracefully', async () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Network error'));
 
-      // Console error mock to keep output clean
-      const consoleSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
-
       const activities = await service.getActivities([creator]);
 
       expect(activities).toHaveLength(0);
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to fetch YouTube feed'),
+        expect.any(Error),
+      );
     });
 
     it('should ignore creators without youtubeChannelId', async () => {
@@ -134,14 +139,14 @@ describe('YouTubeService', () => {
 
     it('should return null on error', async () => {
       mockParserInstance.parseURL.mockRejectedValue(new Error('Error'));
-      const consoleSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
 
       const info = await service.getChannelInfo('channel-id');
 
       expect(info).toBeNull();
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to fetch channel info'),
+        expect.any(Error),
+      );
     });
   });
 });

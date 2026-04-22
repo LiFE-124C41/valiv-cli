@@ -1,4 +1,4 @@
-import { ISummarizeService } from '../domain/interfaces.js';
+import { ISummarizeService, ILogger } from '../domain/interfaces.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { YoutubeTranscript } from 'youtube-transcript-plus';
 import { TranscriptCacheRepository } from './transcript-cache-repository.js';
@@ -7,7 +7,7 @@ import { TranscriptText } from '../domain/models.js';
 export class SummarizeService implements ISummarizeService {
   private cacheRepo: TranscriptCacheRepository;
 
-  constructor() {
+  constructor(private logger: ILogger) {
     this.cacheRepo = new TranscriptCacheRepository();
   }
   async summarizeVideo(
@@ -67,7 +67,7 @@ export class SummarizeService implements ISummarizeService {
         } catch (e2) {
           const msg1 = e instanceof Error ? e.message : String(e);
           const msg2 = e2 instanceof Error ? e2.message : String(e2);
-          console.warn(
+          this.logger.warn(
             `Library fetch failed. Trying fallback. JA: ${msg1}, Default: ${msg2}`,
           );
           // Do not return here, let it fall through to fallback logic
@@ -124,7 +124,7 @@ export class SummarizeService implements ISummarizeService {
         if (onProgress)
           onProgress(`💾 Saved transcript to cache (Creator: ${creatorId})`);
       } catch (saveCacheErr) {
-        console.warn('Failed to save transcript cache', saveCacheErr);
+        this.logger.warn('Failed to save transcript cache', saveCacheErr);
       }
 
       const fullText = transcriptItems
@@ -316,7 +316,7 @@ ${transcript}
           `💾 Saved transcript to cache (Fallback / Creator: ${creatorId})`,
         );
     } catch (saveCacheErr) {
-      console.warn('Failed to save manual transcript cache', saveCacheErr);
+      this.logger.warn('Failed to save manual transcript cache', saveCacheErr);
     }
 
     return mappedTranscript

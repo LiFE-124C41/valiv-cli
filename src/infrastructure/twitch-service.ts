@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Creator, Activity, ScheduleEvent } from '../domain/models.js';
-import { ICacheRepository } from '../domain/interfaces.js';
+import { ICacheRepository, ILogger } from '../domain/interfaces.js';
 
 interface TwitchTokenResponse {
   access_token: string;
@@ -74,6 +74,7 @@ export class TwitchService {
     private clientId: string,
     private clientSecret: string,
     private cacheRepo: ICacheRepository,
+    private logger: ILogger,
   ) {}
 
   private async getAccessToken(): Promise<string> {
@@ -99,7 +100,7 @@ export class TwitchService {
       this.tokenExpiresAt = Date.now() + (response.data.expires_in - 60) * 1000;
       return this.accessToken;
     } catch (error) {
-      console.error('Failed to get Twitch access token:', error);
+      this.logger.error('Failed to get Twitch access token.', error);
       throw new Error('Twitch Authentication Failed');
     }
   }
@@ -129,7 +130,10 @@ export class TwitchService {
       );
       return data.data[0] || null;
     } catch (error) {
-      console.error(`Failed to fetch Twitch user info for ${username}:`, error);
+      this.logger.error(
+        `Failed to fetch Twitch user info for ${username}.`,
+        error,
+      );
       return null;
     }
   }
@@ -193,7 +197,7 @@ export class TwitchService {
         } as Activity;
       });
     } catch (error) {
-      console.error('Failed to fetch Twitch live streams:', error);
+      this.logger.error('Failed to fetch Twitch live streams.', error);
       return [];
     }
   }
@@ -251,7 +255,10 @@ export class TwitchService {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           continue;
         }
-        console.error(`Failed to fetch schedule for ${creator.name}:`, error);
+        this.logger.error(
+          `Failed to fetch schedule for ${creator.name}.`,
+          error,
+        );
       }
     }
 
@@ -302,7 +309,7 @@ export class TwitchService {
           activities.push(...videos);
         }
       } catch (error) {
-        console.error(`Failed to fetch videos for ${creator.name}:`, error);
+        this.logger.error(`Failed to fetch videos for ${creator.name}.`, error);
       }
     }
 

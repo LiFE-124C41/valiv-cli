@@ -14,6 +14,7 @@ import {
   IConfigRepository,
   IActivityService,
   ISummarizeService,
+  ILogger,
 } from '../../domain/interfaces.js';
 import { Activity } from '../../domain/models.js';
 import { VideoPlayerService } from '../../infrastructure/video-player-service.js';
@@ -34,6 +35,7 @@ interface ActivityFeedScreenProps {
   disableColor?: boolean;
   summary?: boolean;
   summarizeService?: ISummarizeService;
+  logger: ILogger;
 }
 
 interface PlaylistItem {
@@ -57,6 +59,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   disableColor,
   summary,
   summarizeService,
+  logger,
 }) => {
   const { exit } = useApp();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -141,7 +144,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
 
         return items;
       } catch (err) {
-        console.error('Failed to read playlist:', err);
+        logger.error('Failed to read playlist.', err);
         return [];
       }
     },
@@ -187,7 +190,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       // A simple way is to poll or wait for the player to stop/idle.
       // But VideoPlayerService wraps MPV.
     } catch (error) {
-      console.error(error);
+      logger.error('Failed to play item.', error);
     } finally {
       setIsLaunching(false);
     }
@@ -352,7 +355,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
       }
     }
 
-    playerServiceRef.current = new VideoPlayerService();
+    playerServiceRef.current = new VideoPlayerService(logger);
 
     try {
       await playerServiceRef.current.play(url, { audioOnly, debug });
@@ -360,7 +363,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
         setIsPlayingAudio(true);
       }
     } catch (error) {
-      console.error(error);
+      logger.error('Failed to launch player.', error);
     } finally {
       setIsLaunching(false);
       if (!audioOnly) {

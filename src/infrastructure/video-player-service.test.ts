@@ -42,10 +42,17 @@ vi.mock('child_process', () => {
 
 describe('VideoPlayerService', () => {
   let service: VideoPlayerService;
+  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new VideoPlayerService();
+    loggerMock = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+    };
+    service = new VideoPlayerService(loggerMock as any);
   });
 
   afterEach(() => {

@@ -10,7 +10,7 @@
 ```mermaid
 graph TD
     Presentation[Presentation Layer<br>(CLI, UI Components)] --> Usecase[Usecase Layer<br>(Application Logic)]
-    Presentation --> Infrastructure[Infrastructure Layer<br>(API Clients, Config)]
+    Presentation --> Infrastructure[Infrastructure Layer<br>(API Clients, Config, Logger)]
     Infrastructure --> Domain[Domain Layer<br>(Models, Interfaces)]
     Usecase --> Domain
     
@@ -36,7 +36,8 @@ src/
 │   ├── config-repository.ts # 設定ファイル読み書き
 │   ├── cache-repository.ts # データキャッシュ (conf)
 │   ├── spreadsheet-service.ts # Google Sheet CSV取得
-│   └── summarize-service.ts # 動画要約 (youtube-transcript + Google GenAI)
+│   ├── summarize-service.ts # 動画要約 (youtube-transcript + Google GenAI)
+│   └── logger.ts           # 共通ロガー実装 (New)
 ├── ui/               # プレゼンテーション層 (UI): Inkコンポーネント
 │   ├── App.tsx       # メインコンポーネント
 │   ├── components/   # 再利用可能なUI部品

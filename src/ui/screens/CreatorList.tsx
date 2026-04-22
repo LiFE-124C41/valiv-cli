@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Text, Box, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
-import { IConfigRepository } from '../../domain/interfaces.js';
+import {
+  IConfigRepository,
+  ILogger,
+} from '../../domain/interfaces.js';
 import { Creator, CreatorStatistics } from '../../domain/models.js';
 import { SpreadsheetService } from '../../infrastructure/spreadsheet-service.js';
 import { formatSubscriberCount } from '../../utils/stringUtils.js';
@@ -16,6 +19,7 @@ interface CreatorListScreenProps {
   onNavigate?: (screen: 'check', props: { filterId?: string }) => void;
   disableColor?: boolean;
   refresh?: boolean;
+  logger: ILogger;
 }
 
 type ViewState = 'list' | 'actions';
@@ -48,6 +52,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   onNavigate,
   disableColor,
   refresh,
+  logger,
 }) => {
   const { exit } = useApp();
   const [creators, setCreators] = useState<Creator[]>(() =>
@@ -81,7 +86,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
         );
         setChannelStats(stats);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to perform action.', e);
       } finally {
         setLoading(false);
       }

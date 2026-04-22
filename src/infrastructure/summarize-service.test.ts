@@ -45,9 +45,16 @@ vi.mock('./transcript-cache-repository.js', () => {
 
 describe('SummarizeService', () => {
   let service: SummarizeService;
+  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
 
   beforeEach(() => {
-    service = new SummarizeService();
+    loggerMock = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+    };
+    service = new SummarizeService(loggerMock as any);
     vi.clearAllMocks();
     mocks.fetchTranscript.mockReset();
     mocks.generateContent.mockReset();
