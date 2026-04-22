@@ -40,6 +40,7 @@ describe('YouTubeService', () => {
       warn: vi.fn(),
       error: vi.fn(),
       debug: vi.fn(),
+      getLogPath: vi.fn().mockReturnValue('valiv_debug.log'),
     };
     service = new YouTubeService(
       cacheRepoMock,

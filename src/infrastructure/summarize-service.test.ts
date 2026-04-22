@@ -53,6 +53,7 @@ describe('SummarizeService', () => {
       warn: vi.fn(),
       error: vi.fn(),
       debug: vi.fn(),
+      getLogPath: vi.fn().mockReturnValue('valiv_debug.log'),
     };
     service = new SummarizeService(loggerMock as unknown as ILogger);
     vi.clearAllMocks();

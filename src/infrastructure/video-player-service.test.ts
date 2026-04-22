@@ -51,6 +51,7 @@ describe('VideoPlayerService', () => {
       warn: vi.fn(),
       error: vi.fn(),
       debug: vi.fn(),
+      getLogPath: vi.fn().mockReturnValue('valiv_debug.log'),
     };
     service = new VideoPlayerService(loggerMock as unknown as ILogger);
   });
