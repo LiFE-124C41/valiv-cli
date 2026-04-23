@@ -10,12 +10,20 @@ vi.mock('rss-parser', () => {
   };
 });
 
+import { ILogger } from '../domain/interfaces.js';
+
 describe('YouTubeService', () => {
   let service: YouTubeService;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockParserInstance: any;
-  let cacheRepoMock: { get: Mock; set: Mock; clear: Mock };
-  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
+  let cacheRepoMock: { get: Mock; set: Mock; clear: Mock; getPath: Mock };
+  let loggerMock: {
+    info: Mock;
+    warn: Mock;
+    error: Mock;
+    debug: Mock;
+    getLogPath: Mock;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,6 +42,7 @@ describe('YouTubeService', () => {
       get: vi.fn().mockReturnValue(null),
       set: vi.fn(),
       clear: vi.fn(),
+      getPath: vi.fn().mockReturnValue('fake-path'),
     };
     loggerMock = {
       info: vi.fn(),

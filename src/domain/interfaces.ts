@@ -61,8 +61,8 @@ export interface IConfigRepository {
 }
 
 export interface ILogger {
-  info(message: string): void;
-  warn(message: string): void;
+  info(message: string, data?: unknown): void;
+  warn(message: string, data?: unknown): void;
   error(message: string, error?: unknown): void;
   debug(message: string, data?: unknown): void;
   getLogPath(): string;

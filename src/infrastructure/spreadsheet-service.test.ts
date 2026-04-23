@@ -10,7 +10,13 @@ vi.mock('axios');
 describe('SpreadsheetService', () => {
   let service: SpreadsheetService;
   let mockCacheRepo: { get: Mock; set: Mock; clear: Mock; getPath: Mock };
-  let mockLogger: { info: Mock; warn: Mock; error: Mock; debug: Mock };
+  let mockLogger: {
+    info: Mock;
+    warn: Mock;
+    error: Mock;
+    debug: Mock;
+    getLogPath: Mock;
+  };
   const mockSpreadsheetId = 'test-sheet-id';
 
   const mockCreators: Creator[] = [

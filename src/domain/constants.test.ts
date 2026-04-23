@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { VALIV_MEMBERS } from './constants';
+import { VALIV_MEMBERS } from './constants.js';
+import { Creator } from './models.js';
 
 describe('VALIV_MEMBERS', () => {
   it('should have 4 members', () => {
@@ -7,7 +8,7 @@ describe('VALIV_MEMBERS', () => {
   });
 
   it('should contain Manaka Tomori', () => {
-    const member = VALIV_MEMBERS.find((m) => m.id === 'manaka_tomori');
+    const member = VALIV_MEMBERS.find((m: Creator) => m.id === 'manaka_tomori');
     expect(member).toBeDefined();
     expect(member?.name).toBe('Manaka Tomori');
     expect(member?.youtubeChannelId).toBe('UCuWoH9mx0EgT69UyVxaw1NQ');
@@ -15,14 +16,16 @@ describe('VALIV_MEMBERS', () => {
   });
 
   it('should contain Cosmo Kamizuru', () => {
-    const member = VALIV_MEMBERS.find((m) => m.id === 'cosmo_kamizuru');
+    const member = VALIV_MEMBERS.find(
+      (m: Creator) => m.id === 'cosmo_kamizuru',
+    );
     expect(member).toBeDefined();
     expect(member?.name).toBe('Cosmo Kamizuru');
   });
 
   it('should contain Sara Letora Oliveira Utagawa', () => {
     const member = VALIV_MEMBERS.find(
-      (m) => m.id === 'sara_letora_oliveira_utagawa',
+      (m: Creator) => m.id === 'sara_letora_oliveira_utagawa',
     );
     expect(member).toBeDefined();
     expect(member?.name).toBe('Sara Letora Oliveira Utagawa');
@@ -30,7 +33,9 @@ describe('VALIV_MEMBERS', () => {
   });
 
   it('should contain va-liv official', () => {
-    const member = VALIV_MEMBERS.find((m) => m.id === 'valiv_official');
+    const member = VALIV_MEMBERS.find(
+      (m: Creator) => m.id === 'valiv_official',
+    );
     expect(member).toBeDefined();
     expect(member?.name).toBe('va-liv official');
   });

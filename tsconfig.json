@@ -13,7 +13,8 @@
         "typeRoots": [
             "./node_modules/@types",
             "./src/types"
-        ]
+        ],
+        "types": ["node", "react"]
     },
     "include": [
         "src/**/*"

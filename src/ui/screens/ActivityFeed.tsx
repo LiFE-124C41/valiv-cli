@@ -160,7 +160,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     // This is specific to the user's format, but we can try generic matching or just leave blank.
 
     if (!playerServiceRef.current) {
-      playerServiceRef.current = new VideoPlayerService();
+      playerServiceRef.current = new VideoPlayerService(logger);
     }
 
     try {
