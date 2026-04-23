@@ -10,7 +10,7 @@ vi.mock('rss-parser', () => {
   };
 });
 
-import { ICacheRepository, ILogger } from '../domain/interfaces.js';
+import { ILogger } from '../domain/interfaces.js';
 
 describe('YouTubeService', () => {
   let service: YouTubeService;

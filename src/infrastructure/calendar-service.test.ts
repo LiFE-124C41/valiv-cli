@@ -3,7 +3,11 @@ import { CalendarService } from './calendar-service.js';
 import ical from 'node-ical';
 import { Creator, ScheduleEvent } from '../domain/models.js';
 import { YouTubeService } from './youtube-service.js';
-import { ICacheRepository, IConfigRepository, ILogger } from '../domain/interfaces.js';
+import {
+  ICacheRepository,
+  IConfigRepository,
+  ILogger,
+} from '../domain/interfaces.js';
 
 // Mock node-ical
 vi.mock('node-ical', () => {

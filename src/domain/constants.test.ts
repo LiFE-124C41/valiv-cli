@@ -16,7 +16,9 @@ describe('VALIV_MEMBERS', () => {
   });
 
   it('should contain Cosmo Kamizuru', () => {
-    const member = VALIV_MEMBERS.find((m: Creator) => m.id === 'cosmo_kamizuru');
+    const member = VALIV_MEMBERS.find(
+      (m: Creator) => m.id === 'cosmo_kamizuru',
+    );
     expect(member).toBeDefined();
     expect(member?.name).toBe('Cosmo Kamizuru');
   });
@@ -31,7 +33,9 @@ describe('VALIV_MEMBERS', () => {
   });
 
   it('should contain va-liv official', () => {
-    const member = VALIV_MEMBERS.find((m: Creator) => m.id === 'valiv_official');
+    const member = VALIV_MEMBERS.find(
+      (m: Creator) => m.id === 'valiv_official',
+    );
     expect(member).toBeDefined();
     expect(member?.name).toBe('va-liv official');
   });
