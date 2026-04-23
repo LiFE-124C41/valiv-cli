@@ -10,14 +10,20 @@ export class Logger implements ILogger {
     this.logPath = path.join(path.dirname(configPath), 'valiv_debug.log');
   }
 
-  info(message: string): void {
+  info(message: string, data?: unknown): void {
     console.log(message);
-    this.writeToFile('INFO', message);
+    this.writeToFile(
+      'INFO',
+      `${message}${data ? '\n' + JSON.stringify(data, null, 2) : ''}`,
+    );
   }
 
-  warn(message: string): void {
+  warn(message: string, data?: unknown): void {
     console.warn(message);
-    this.writeToFile('WARN', message);
+    this.writeToFile(
+      'WARN',
+      `${message}${data ? '\n' + JSON.stringify(data, null, 2) : ''}`,
+    );
   }
 
   error(message: string, error?: unknown): void {

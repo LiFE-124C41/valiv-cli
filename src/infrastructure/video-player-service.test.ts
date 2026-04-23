@@ -9,6 +9,7 @@ import {
   type Mock,
 } from 'vitest';
 import { VideoPlayerService } from './video-player-service.js';
+import { ILogger } from '../domain/interfaces.js';
 import NodeMpv from 'node-mpv';
 import { exec, spawn } from 'child_process';
 
@@ -42,7 +43,13 @@ vi.mock('child_process', () => {
 
 describe('VideoPlayerService', () => {
   let service: VideoPlayerService;
-  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
+  let loggerMock: {
+    info: Mock;
+    warn: Mock;
+    error: Mock;
+    debug: Mock;
+    getLogPath: Mock;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -176,25 +183,25 @@ describe('VideoPlayerService', () => {
     };
 
     it('stop should call mpv.quit', async () => {
-      const mpv = await initMpv();
+      const mpv: any = await initMpv();
       await service.stop();
       expect(mpv.quit).toHaveBeenCalled();
     });
 
     it('seek should call mpv.seek', async () => {
-      const mpv = await initMpv();
+      const mpv: any = await initMpv();
       await service.seek(30);
       expect(mpv.seek).toHaveBeenCalledWith(30);
     });
 
     it('togglePause should call mpv.togglePause', async () => {
-      const mpv = await initMpv();
+      const mpv: any = await initMpv();
       await service.togglePause();
       expect(mpv.togglePause).toHaveBeenCalled();
     });
 
     it('adjustVolume should call mpv.adjustVolume', async () => {
-      const mpv = await initMpv();
+      const mpv: any = await initMpv();
       await service.adjustVolume(10);
       expect(mpv.adjustVolume).toHaveBeenCalledWith(10);
     });

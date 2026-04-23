@@ -126,7 +126,7 @@ export class CalendarService implements IScheduleService {
 
           return (
             Object.values(events)
-              .filter((event) => event.type === 'VEVENT')
+              .filter((event) => event && event.type === 'VEVENT')
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .map((event: any) => ({
                 id: event.uid,

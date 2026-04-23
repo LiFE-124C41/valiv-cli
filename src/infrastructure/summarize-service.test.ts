@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { SummarizeService } from './summarize-service.js';
+import { ILogger } from '../domain/interfaces.js';
 
 // Mock dependencies
 const mocks = vi.hoisted(() => {
@@ -45,7 +46,13 @@ vi.mock('./transcript-cache-repository.js', () => {
 
 describe('SummarizeService', () => {
   let service: SummarizeService;
-  let loggerMock: { info: Mock; warn: Mock; error: Mock; debug: Mock };
+  let loggerMock: {
+    info: Mock;
+    warn: Mock;
+    error: Mock;
+    debug: Mock;
+    getLogPath: Mock;
+  };
 
   beforeEach(() => {
     loggerMock = {

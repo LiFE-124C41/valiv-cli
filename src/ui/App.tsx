@@ -14,6 +14,7 @@ import ScheduleListScreen from './screens/ScheduleList.js';
 import AddCreatorScreen from './screens/AddCreator.js';
 import RemoveCreator from './RemoveCreator.js';
 import ExportScreen from './screens/ExportScreen.js';
+import { SummarizeService } from '../infrastructure/summarize-service.js';
 
 interface AppProps {
   command: string;
@@ -87,7 +88,7 @@ const App: React.FC<AppProps> = ({
   const [spreadsheetService] = useState(
     () => new SpreadsheetService(cacheRepo, logger),
   );
-  const [summarizeService] = useState(() => new SummarizeService());
+  const [summarizeService] = useState(() => new SummarizeService(logger));
 
   // Navigation State
   const [currentScreen, setCurrentScreen] = useState<ScreenName>(

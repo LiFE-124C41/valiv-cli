@@ -12,7 +12,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/cli.tsx --format esm --clean",
+    "type-check": "tsc --noEmit",
+    "build": "npm run type-check && tsup src/cli.tsx --format esm --clean",
     "prepack": "npm run build",
     "dev": "tsup src/cli.tsx --format esm --watch --onSuccess \"node dist/cli.js\"",
     "test": "vitest",
