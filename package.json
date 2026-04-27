@@ -50,7 +50,7 @@
     "ink-text-input": "^6.0.0",
     "marked": "^15.0.0",
     "marked-terminal": "^7.3.0",
-    "node-ical": "^0.25.4",
+    "node-ical": "^0.26.0",
     "node-mpv": "^1.5.0",
     "open": "^11.0.0",
     "react": "^19.2.1",
