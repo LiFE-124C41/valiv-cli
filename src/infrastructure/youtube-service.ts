@@ -246,9 +246,19 @@ export class YouTubeService implements IActivityService {
               }
             }
 
+            const title = item.title || '';
+            let description = '';
+            if (item['media'] && item['media']['media:description']) {
+              description = item['media']['media:description'][0] || '';
+            }
+
+            const isShorts =
+              title.toLowerCase().includes('#shorts') ||
+              description.toLowerCase().includes('#shorts');
+
             return {
               id: item.id || item.link || '',
-              title: item.title || '',
+              title,
               url: item.link || '',
               platform: 'youtube' as const,
               type: 'video' as const, // RSS doesn't distinguish live/video easily
@@ -256,6 +266,7 @@ export class YouTubeService implements IActivityService {
               author: creator,
               views,
               status: 'video' as const,
+              isShorts,
             } as Activity;
           });
         } catch (error) {

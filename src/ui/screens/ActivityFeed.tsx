@@ -34,6 +34,7 @@ interface ActivityFeedScreenProps {
   refresh?: boolean;
   disableColor?: boolean;
   summary?: boolean;
+  excludeShorts?: boolean;
   summarizeService?: ISummarizeService;
   logger: ILogger;
 }
@@ -58,6 +59,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
   refresh,
   disableColor,
   summary,
+  excludeShorts,
   summarizeService,
   logger,
 }) => {
@@ -250,8 +252,13 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
           const isLive = activity.status === 'live';
           const isUpcoming = activity.status === 'upcoming';
           const hasViews = activity.views !== 0;
+          const isShorts = activity.platform === 'youtube' && activity.isShorts;
 
-          return isTargetCreator && (isLive || (hasViews && !isUpcoming));
+          return (
+            isTargetCreator &&
+            (isLive || (hasViews && !isUpcoming)) &&
+            !(excludeShorts && isShorts)
+          );
         })
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 

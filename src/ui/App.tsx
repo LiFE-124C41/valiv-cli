@@ -29,6 +29,7 @@ interface AppProps {
   disableColor?: boolean;
   clean?: boolean;
   summary?: boolean;
+  excludeShorts?: boolean;
   outputDir?: string;
   format?: string;
 }
@@ -55,6 +56,7 @@ const App: React.FC<AppProps> = ({
   disableColor,
   clean,
   summary,
+  excludeShorts,
   outputDir,
   format,
 }) => {
@@ -235,6 +237,7 @@ const App: React.FC<AppProps> = ({
           refresh={refresh}
           disableColor={disableColor}
           summary={summary}
+          excludeShorts={excludeShorts}
           summarizeService={summarizeService}
           logger={logger}
         />
