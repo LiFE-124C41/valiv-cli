@@ -101,7 +101,7 @@ export class TwitchService {
       return this.accessToken;
     } catch (error) {
       this.logger.error('Failed to get Twitch access token.', error);
-      throw new Error('Twitch Authentication Failed');
+      throw new Error('Twitch Authentication Failed', { cause: error });
     }
   }
 

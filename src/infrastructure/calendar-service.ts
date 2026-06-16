@@ -58,7 +58,7 @@ export class CalendarService implements IScheduleService {
       }
     }
 
-    let schedules: ScheduleEvent[] = [];
+    let schedules: ScheduleEvent[];
     let youtubeEvents: ScheduleEvent[] = [];
     let twitchEvents: ScheduleEvent[] = [];
 

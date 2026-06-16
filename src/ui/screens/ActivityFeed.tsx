@@ -444,7 +444,7 @@ const ActivityFeedScreen: React.FC<ActivityFeedScreenProps> = ({
     const paginatedActivities = activities.slice(startIndex, endIndex);
 
     const list = paginatedActivities.map((activity) => {
-      let detailsText = '';
+      let detailsText: string;
       if (activity.status === 'live') {
         const viewers = activity.concurrentViewers
           ? `${parseInt(activity.concurrentViewers).toLocaleString()} watching`
