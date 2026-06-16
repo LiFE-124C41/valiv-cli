@@ -56,6 +56,8 @@ export interface Activity {
   author?: Creator;
   /** 再生数 (RSSから取得、またはAPIから補完) */
   views?: number;
+  /** YouTubeショート動画かどうか (Optional) */
+  isShorts?: boolean;
   /** ステータス (live | upcoming | video) - API連携時のみ有効 */
   status?: 'live' | 'upcoming' | 'video';
   /** 同時視聴者数 (liveの場合のみ) - API連携時のみ有効 */

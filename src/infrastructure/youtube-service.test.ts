@@ -111,7 +111,49 @@ describe('YouTubeService', () => {
         author: creator,
         views: 1000,
         status: 'video',
+        isShorts: false,
       });
+    });
+
+    it('should detect shorts from title hashtag', async () => {
+      const mockFeed = {
+        items: [
+          {
+            id: 'video1',
+            title: 'Cool Video #shorts',
+            link: 'http://youtube.com/video1',
+            pubDate: '2023-01-01T10:00:00Z',
+          },
+        ],
+      };
+
+      mockParserInstance.parseURL.mockResolvedValue(mockFeed);
+
+      const activities = await service.getActivities([creator]);
+      expect(activities[0].isShorts).toBe(true);
+    });
+
+    it('should detect shorts from description hashtag', async () => {
+      const mockFeed = {
+        items: [
+          {
+            id: 'video1',
+            title: 'Cool Video',
+            link: 'http://youtube.com/video1',
+            pubDate: '2023-01-01T10:00:00Z',
+            media: {
+              'media:description': [
+                'This is a description containing #Shorts for this video.',
+              ],
+            },
+          },
+        ],
+      };
+
+      mockParserInstance.parseURL.mockResolvedValue(mockFeed);
+
+      const activities = await service.getActivities([creator]);
+      expect(activities[0].isShorts).toBe(true);
     });
 
     it('should handle errors gracefully', async () => {

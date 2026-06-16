@@ -108,6 +108,8 @@ export interface Activity {
   description?: string;
   /** 活動を行ったクリエイター */
   author?: Creator;
+  /** YouTubeショート動画かどうか (Optional) */
+  isShorts?: boolean;
 }
 ```
 

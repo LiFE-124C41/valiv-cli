@@ -80,6 +80,7 @@ program
     '-s, --summary',
     'Summarize the latest activity (requires Gemini API Key)',
   )
+  .option('-e, --exclude-shorts', 'Exclude YouTube Shorts')
   .option('--no-color-creator', 'Disable creator colors')
   .action((id, options) => {
     render(
@@ -91,6 +92,7 @@ program
         debug={options.debug}
         refresh={options.refresh}
         summary={options.summary}
+        excludeShorts={options.excludeShorts}
         disableColor={!options.colorCreator}
       />,
     );
