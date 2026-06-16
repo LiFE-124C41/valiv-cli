@@ -142,7 +142,9 @@ describe('YouTubeService', () => {
             link: 'http://youtube.com/video1',
             pubDate: '2023-01-01T10:00:00Z',
             media: {
-              'media:description': ['This is a description containing #Shorts for this video.'],
+              'media:description': [
+                'This is a description containing #Shorts for this video.',
+              ],
             },
           },
         ],
