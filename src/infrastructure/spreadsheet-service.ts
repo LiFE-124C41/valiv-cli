@@ -117,7 +117,10 @@ export class SpreadsheetService {
         const youtubeRows = youtubeDataByMember[creator.id];
         const xRows = xDataByMember[creator.id];
 
-        if ((!youtubeRows || youtubeRows.length === 0) && (!xRows || xRows.length === 0)) {
+        if (
+          (!youtubeRows || youtubeRows.length === 0) &&
+          (!xRows || xRows.length === 0)
+        ) {
           continue;
         }
 
@@ -138,7 +141,10 @@ export class SpreadsheetService {
           for (let i = youtubeRows.length - 2; i >= 0; i--) {
             const row = youtubeRows[i];
             if (row[0] === yesterdayStr) {
-              yesterdaysSubscriberCount = parseInt(row[3].replace(/,/g, ''), 10);
+              yesterdaysSubscriberCount = parseInt(
+                row[3].replace(/,/g, ''),
+                10,
+              );
               yesterdaysVideoCount = parseInt(row[4].replace(/,/g, ''), 10);
               yesterdaysViewCount = parseInt(row[5].replace(/,/g, ''), 10);
               foundYesterday = true;
@@ -148,12 +154,18 @@ export class SpreadsheetService {
 
           if (!foundYesterday && youtubeRows.length >= 2) {
             const prevRow = youtubeRows[youtubeRows.length - 2];
-            yesterdaysSubscriberCount = parseInt(prevRow[3].replace(/,/g, ''), 10);
+            yesterdaysSubscriberCount = parseInt(
+              prevRow[3].replace(/,/g, ''),
+              10,
+            );
             yesterdaysVideoCount = parseInt(prevRow[4].replace(/,/g, ''), 10);
             yesterdaysViewCount = parseInt(prevRow[5].replace(/,/g, ''), 10);
           }
 
-          const currentSubscribers = parseInt(subscriberCountStr.replace(/,/g, ''), 10);
+          const currentSubscribers = parseInt(
+            subscriberCountStr.replace(/,/g, ''),
+            10,
+          );
           const subGrowth = currentSubscribers - yesterdaysSubscriberCount;
 
           const currentVideos = parseInt(videoCountStr.replace(/,/g, ''), 10);
@@ -200,12 +212,18 @@ export class SpreadsheetService {
 
           if (!foundYesterday && xRows.length >= 2) {
             const prevRow = xRows[xRows.length - 2];
-            yesterdaysFollowersCount = parseInt(prevRow[3].replace(/,/g, ''), 10);
+            yesterdaysFollowersCount = parseInt(
+              prevRow[3].replace(/,/g, ''),
+              10,
+            );
             yesterdaysTweetCount = parseInt(prevRow[4].replace(/,/g, ''), 10);
             yesterdaysListedCount = parseInt(prevRow[5].replace(/,/g, ''), 10);
           }
 
-          const currentFollowers = parseInt(followersCountStr.replace(/,/g, ''), 10);
+          const currentFollowers = parseInt(
+            followersCountStr.replace(/,/g, ''),
+            10,
+          );
           const followersGrowth = currentFollowers - yesterdaysFollowersCount;
 
           const currentTweets = parseInt(tweetCountStr.replace(/,/g, ''), 10);

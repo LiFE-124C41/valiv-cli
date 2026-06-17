@@ -69,7 +69,15 @@ describe('SpreadsheetService', () => {
 
     // Headers + Yesterday + Today for X
     const xCsv = createCsvData([
-      ['Date', 'Member ID', 'Name', 'Followers', 'Tweets', 'Listed', 'Following'],
+      [
+        'Date',
+        'Member ID',
+        'Name',
+        'Followers',
+        'Tweets',
+        'Listed',
+        'Following',
+      ],
       [yesterday, 'creator1', 'Creator 1', '5,000', '1,000', '100', '200'],
       [today, 'creator1', 'Creator 1', '5,100', '1,010', '105', '205'],
     ]);
@@ -148,7 +156,15 @@ describe('SpreadsheetService', () => {
     ]);
 
     const xCsv = createCsvData([
-      ['Date', 'Member ID', 'Name', 'Followers', 'Tweets', 'Listed', 'Following'],
+      [
+        'Date',
+        'Member ID',
+        'Name',
+        'Followers',
+        'Tweets',
+        'Listed',
+        'Following',
+      ],
       [twoDaysAgo, 'creator1', 'Creator 1', '5,000', '1,000', '100', '200'],
       [today, 'creator1', 'Creator 1', '5,200', '1,020', '110', '200'],
     ]);

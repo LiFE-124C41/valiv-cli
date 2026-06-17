@@ -41,20 +41,25 @@ const GrowthIndicator: React.FC<GrowthIndicatorProps> = ({ value }) => {
   );
 };
 
-const getCompactStatsText = (stats: CreatorStatistics, isDetail: boolean = false): string => {
+const getCompactStatsText = (
+  stats: CreatorStatistics,
+  isDetail: boolean = false,
+): string => {
   const parts = [];
   if (stats.subscriberCount) {
     const ytFormatted = formatSubscriberCount(stats.subscriberCount, isDetail);
-    const growth = stats.subscriberGrowth && stats.subscriberGrowth !== 0
-      ? `(${stats.subscriberGrowth > 0 ? '+' : ''}${stats.subscriberGrowth.toLocaleString()})`
-      : '';
+    const growth =
+      stats.subscriberGrowth && stats.subscriberGrowth !== 0
+        ? `(${stats.subscriberGrowth > 0 ? '+' : ''}${stats.subscriberGrowth.toLocaleString()})`
+        : '';
     parts.push(`YT: ${ytFormatted}${growth ? ' ' + growth : ''}`);
   }
   if (stats.xFollowersCount) {
     const xFormatted = formatSubscriberCount(stats.xFollowersCount!, isDetail);
-    const growth = stats.xFollowersGrowth && stats.xFollowersGrowth !== 0
-      ? `(${stats.xFollowersGrowth > 0 ? '+' : ''}${stats.xFollowersGrowth.toLocaleString()})`
-      : '';
+    const growth =
+      stats.xFollowersGrowth && stats.xFollowersGrowth !== 0
+        ? `(${stats.xFollowersGrowth > 0 ? '+' : ''}${stats.xFollowersGrowth.toLocaleString()})`
+        : '';
     parts.push(`X: ${xFormatted}${growth ? ' ' + growth : ''}`);
   }
   return parts.length > 0 ? ` [${parts.join(' | ')}]` : '';
