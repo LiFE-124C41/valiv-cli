@@ -33,6 +33,21 @@ export interface CreatorStatistics {
   viewGrowth?: number;
   /** 前日比（動画数増加） */
   videoGrowth?: number;
+
+  /** フォロワー数 (X) */
+  xFollowersCount?: string;
+  /** 総ポスト数 (X) */
+  xTweetCount?: string;
+  /** リスト数 (X) */
+  xListedCount?: string;
+  /** 前日比（フォロワー数増加） */
+  xFollowersGrowth?: number;
+  /** 前日比（ポスト数増加） */
+  xTweetsGrowth?: number;
+  /** 前日比（リスト数増加） */
+  xListedGrowth?: number;
+  /** フォロー数 (X) */
+  xFollowingCount?: string;
 }
 
 export interface Activity {

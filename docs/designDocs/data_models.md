@@ -44,6 +44,42 @@ export interface Creator {
 }
 ```
 
+### CreatorStatistics
+統計情報（YouTube登録者数やXフォロワー数など）を表します。
+
+```typescript
+export interface CreatorStatistics {
+  /** 登録者数 (YouTube) */
+  subscriberCount: string;
+  /** 総再生回数 (YouTube) */
+  viewCount: string;
+  /** 動画数 (YouTube) */
+  videoCount: string;
+  /** 前日比（登録者数増加） */
+  subscriberGrowth?: number;
+  /** 前日比（再生数増加） */
+  viewGrowth?: number;
+  /** 前日比（動画数増加） */
+  videoGrowth?: number;
+
+  /** フォロワー数 (X) */
+  xFollowersCount?: string;
+  /** 総ポスト数 (X) */
+  xTweetCount?: string;
+  /** リスト数 (X) */
+  xListedCount?: string;
+  /** 前日比（フォロワー数増加） */
+  xFollowersGrowth?: number;
+  /** 前日比（ポスト数増加） */
+  xTweetsGrowth?: number;
+  /** 前日比（リスト数増加） */
+  xListedGrowth?: number;
+  /** フォロー数 (X) */
+  xFollowingCount?: string;
+}
+```
+
+
 ### VALIV_MEMBERS
 初期登録されるメンバーのリストです。
 
@@ -183,7 +219,9 @@ export interface ConfigSchema {
 
 ### Google Spreadsheet Schema
 
-データは `daily_stats` という単一のワークシートに蓄積されます。
+データは `daily_stats`（YouTube統計用）および `x_stats`（X統計用）という2つのワークシートに蓄積されます。
+
+#### daily_stats シート
 
 | Column Index | Header Name | Description | Example |
 | :--- | :--- | :--- | :--- |
@@ -193,3 +231,16 @@ export interface ConfigSchema {
 | 3 | Subscribers | チャンネル登録者数 | 10000 |
 | 4 | Video Count | 動画数 | 50 |
 | 5 | View Count | 総再生回数 | 100000 |
+
+#### x_stats シート
+
+| Column Index | Header Name | Description | Example |
+| :--- | :--- | :--- | :--- |
+| 0 | Date | 記録日 (YYYY-MM-DD) | 2024-01-01 |
+| 1 | Member ID | クリエイターID | manaka_tomori |
+| 2 | Name | クリエイター名 | Manaka Tomori |
+| 3 | Followers | フォロワー数 | 5000 |
+| 4 | Tweets | 総ポスト数 | 2500 |
+| 5 | Listed | リスト登録数 | 120 |
+| 6 | Following | フォロー数 | 300 |
+

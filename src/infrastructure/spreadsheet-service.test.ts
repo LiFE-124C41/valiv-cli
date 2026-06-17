@@ -60,14 +60,37 @@ describe('SpreadsheetService', () => {
       .toISOString()
       .split('T')[0];
 
-    // Headers + Yesterday + Today
-    const csvData = createCsvData([
+    // Headers + Yesterday + Today for YouTube
+    const youtubeCsv = createCsvData([
       ['Date', 'Member ID', 'Name', 'Subscribers', 'Video Count', 'View Count'],
       [yesterday, 'creator1', 'Creator 1', '1,000', '10', '10,000'],
       [today, 'creator1', 'Creator 1', '1,050', '12', '10,500'],
     ]);
 
-    vi.mocked(axios.get).mockResolvedValue({ data: csvData });
+    // Headers + Yesterday + Today for X
+    const xCsv = createCsvData([
+      [
+        'Date',
+        'Member ID',
+        'Name',
+        'Followers',
+        'Tweets',
+        'Listed',
+        'Following',
+      ],
+      [yesterday, 'creator1', 'Creator 1', '5,000', '1,000', '100', '200'],
+      [today, 'creator1', 'Creator 1', '5,100', '1,010', '105', '205'],
+    ]);
+
+    vi.mocked(axios.get).mockImplementation(async (url: string) => {
+      if (url.includes('sheet=daily_stats')) {
+        return { data: youtubeCsv };
+      }
+      if (url.includes('sheet=x_stats')) {
+        return { data: xCsv };
+      }
+      return { data: '' };
+    });
 
     const stats = await service.getStatistics(mockSpreadsheetId, mockCreators);
 
@@ -82,6 +105,18 @@ describe('SpreadsheetService', () => {
     expect(stats['creator1'].videoGrowth).toBe(2);
     // Growth: 10500 - 10000 = 500
     expect(stats['creator1'].viewGrowth).toBe(500);
+
+    // X stats
+    expect(stats['creator1'].xFollowersCount).toBe('5,100');
+    expect(stats['creator1'].xTweetCount).toBe('1,010');
+    expect(stats['creator1'].xListedCount).toBe('105');
+    expect(stats['creator1'].xFollowingCount).toBe('205');
+    // X Growth: 5100 - 5000 = 100
+    expect(stats['creator1'].xFollowersGrowth).toBe(100);
+    // X Tweets Growth: 1010 - 1000 = 10
+    expect(stats['creator1'].xTweetsGrowth).toBe(10);
+    // X Listed Growth: 105 - 100 = 5
+    expect(stats['creator1'].xListedGrowth).toBe(5);
   });
 
   it('should handle CSV with quoted values containing commas', async () => {
@@ -90,17 +125,17 @@ describe('SpreadsheetService', () => {
       .toISOString()
       .split('T')[0];
 
-    // Example: "1,000" is already standard, but let's ensure the parser handles the quotes we wrapping around it.
-    // The service implementation expects values to be quoted in the CSV response from Google Sheets.
-    // Row format: "Date","Member ID","Name","Subscribers","Video Count","View Count"
-
-    // Test case where values might NOT have commas inside but are quoted
-    const csvData =
+    const youtubeCsv =
       '"Date","Member ID","Name","Subscribers","Video Count","View Count"\n' +
       `"${yesterday}","creator1","Creator 1","1000","10","10000"\n` +
       `"${today}","creator1","Creator 1","1050","12","10500"`;
 
-    vi.mocked(axios.get).mockResolvedValue({ data: csvData });
+    vi.mocked(axios.get).mockImplementation(async (url: string) => {
+      if (url.includes('sheet=daily_stats')) {
+        return { data: youtubeCsv };
+      }
+      return { data: '' };
+    });
 
     const stats = await service.getStatistics(mockSpreadsheetId, mockCreators);
 
@@ -109,24 +144,45 @@ describe('SpreadsheetService', () => {
   });
 
   it('should use fallback row if yesterday data is missing', async () => {
-    // Case: Data for "today" and "2 days ago", but no "yesterday"
     const today = new Date().toISOString().split('T')[0];
     const twoDaysAgo = new Date(Date.now() - 86400000 * 2)
       .toISOString()
       .split('T')[0];
 
-    const csvData = createCsvData([
+    const youtubeCsv = createCsvData([
       ['Date', 'Member ID', 'Name', 'Subscribers', 'Video Count', 'View Count'],
       [twoDaysAgo, 'creator1', 'Creator 1', '1,000', '10', '10,000'],
       [today, 'creator1', 'Creator 1', '1,100', '15', '11,000'],
     ]);
 
-    vi.mocked(axios.get).mockResolvedValue({ data: csvData });
+    const xCsv = createCsvData([
+      [
+        'Date',
+        'Member ID',
+        'Name',
+        'Followers',
+        'Tweets',
+        'Listed',
+        'Following',
+      ],
+      [twoDaysAgo, 'creator1', 'Creator 1', '5,000', '1,000', '100', '200'],
+      [today, 'creator1', 'Creator 1', '5,200', '1,020', '110', '200'],
+    ]);
+
+    vi.mocked(axios.get).mockImplementation(async (url: string) => {
+      if (url.includes('sheet=daily_stats')) {
+        return { data: youtubeCsv };
+      }
+      if (url.includes('sheet=x_stats')) {
+        return { data: xCsv };
+      }
+      return { data: '' };
+    });
 
     const stats = await service.getStatistics(mockSpreadsheetId, mockCreators);
 
-    // It should define subscriberGrowth even if exact yesterday match fails, finding the previous row
     expect(stats['creator1'].subscriberGrowth).toBe(100);
+    expect(stats['creator1'].xFollowersGrowth).toBe(200);
   });
 
   it('should return cached data if available and not refreshing', async () => {
@@ -138,6 +194,13 @@ describe('SpreadsheetService', () => {
         subscriberGrowth: 10,
         videoGrowth: 1,
         viewGrowth: 100,
+        xFollowersCount: '10,000',
+        xTweetCount: '2,000',
+        xListedCount: '150',
+        xFollowingCount: '300',
+        xFollowersGrowth: 50,
+        xTweetsGrowth: 5,
+        xListedGrowth: 2,
       },
     };
 
@@ -162,26 +225,64 @@ describe('SpreadsheetService', () => {
       .toISOString()
       .split('T')[0];
 
-    const csvData = createCsvData([
+    const youtubeCsv = createCsvData([
       ['Date', 'Member ID', 'Name', 'Subscribers', 'Video Count', 'View Count'],
       [yesterday, 'creator1', 'Creator 1', '100', '1', '1000'],
       [today, 'creator1', 'Creator 1', '200', '2', '2000'],
     ]);
-    vi.mocked(axios.get).mockResolvedValue({ data: csvData });
+    vi.mocked(axios.get).mockImplementation(async (url: string) => {
+      if (url.includes('sheet=daily_stats')) {
+        return { data: youtubeCsv };
+      }
+      return { data: '' };
+    });
 
     await service.getStatistics(mockSpreadsheetId, mockCreators, true);
 
     expect(axios.get).toHaveBeenCalled();
   });
 
-  it('should gracefully handle network errors', async () => {
+  it('should gracefully handle network errors for both sheets', async () => {
     vi.mocked(axios.get).mockRejectedValue(new Error('Network Error'));
 
     const stats = await service.getStatistics(mockSpreadsheetId, mockCreators);
 
     expect(stats).toEqual({});
     expect(mockLogger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Error fetching/parsing spreadsheet'),
+      expect.stringContaining('Error fetching daily_stats sheet'),
+      expect.any(Error),
+    );
+  });
+
+  it('should partially succeed if one sheet fails to fetch', async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000)
+      .toISOString()
+      .split('T')[0];
+
+    const youtubeCsv = createCsvData([
+      ['Date', 'Member ID', 'Name', 'Subscribers', 'Video Count', 'View Count'],
+      [yesterday, 'creator1', 'Creator 1', '1,000', '10', '10,000'],
+      [today, 'creator1', 'Creator 1', '1,050', '12', '10,500'],
+    ]);
+
+    vi.mocked(axios.get).mockImplementation(async (url: string) => {
+      if (url.includes('sheet=daily_stats')) {
+        return { data: youtubeCsv };
+      }
+      if (url.includes('sheet=x_stats')) {
+        throw new Error('404 Not Found');
+      }
+      return { data: '' };
+    });
+
+    const stats = await service.getStatistics(mockSpreadsheetId, mockCreators);
+
+    expect(stats['creator1']).toBeDefined();
+    expect(stats['creator1'].subscriberCount).toBe('1,050');
+    expect(stats['creator1'].xFollowersCount).toBeUndefined();
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Error fetching x_stats sheet'),
       expect.any(Error),
     );
   });
