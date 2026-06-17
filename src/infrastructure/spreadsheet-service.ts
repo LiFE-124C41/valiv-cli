@@ -34,20 +34,27 @@ export class SpreadsheetService {
     }
 
     try {
-      // Fetch the single 'daily_stats' sheet
-      const sheetName = 'daily_stats';
-      const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+      // Fetch daily_stats (YouTube)
+      let youtubeCsvData = '';
+      try {
+        const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('daily_stats')}`;
+        const response = await axios.get(url);
+        youtubeCsvData = response.data as string;
+      } catch (e) {
+        this.logger.error('Error fetching daily_stats sheet.', e);
+      }
 
-      const response = await axios.get(url);
-      const csvData = response.data as string;
+      // Fetch x_stats (X)
+      let xCsvData = '';
+      try {
+        const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('x_stats')}`;
+        const response = await axios.get(url);
+        xCsvData = response.data as string;
+      } catch (e) {
+        this.logger.warn('Error fetching x_stats sheet.', e);
+      }
 
-      const lines = csvData
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0);
-
-      // Header: "Date", "Member ID", "Name", "Subscribers", "Video Count", "View Count"
-      if (lines.length < 2) return {};
+      if (!youtubeCsvData && !xCsvData) return {};
 
       // Parse CSV lines
       const parseLine = (line: string) => {
@@ -69,87 +76,157 @@ export class SpreadsheetService {
         return parts.map((p) => p.replace(/^"|"$/g, ''));
       };
 
-      // Group rows by member_id
-      const dataByMember: Record<string, string[][]> = {};
+      const youtubeLines = youtubeCsvData
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
 
-      // Skip header
-      for (let i = 1; i < lines.length; i++) {
-        const row = parseLine(lines[i]);
-        if (row.length < 6) continue; // Ensure we have enough columns
+      const xLines = xCsvData
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
 
-        const memberId = row[1]; // Index 1 is Member ID
-        if (!dataByMember[memberId]) {
-          dataByMember[memberId] = [];
+      const youtubeDataByMember: Record<string, string[][]> = {};
+      if (youtubeLines.length >= 2) {
+        for (let i = 1; i < youtubeLines.length; i++) {
+          const row = parseLine(youtubeLines[i]);
+          if (row.length < 6) continue;
+          const memberId = row[1];
+          if (!youtubeDataByMember[memberId]) {
+            youtubeDataByMember[memberId] = [];
+          }
+          youtubeDataByMember[memberId].push(row);
         }
-        dataByMember[memberId].push(row);
+      }
+
+      const xDataByMember: Record<string, string[][]> = {};
+      if (xLines.length >= 2) {
+        for (let i = 1; i < xLines.length; i++) {
+          const row = parseLine(xLines[i]);
+          if (row.length < 7) continue;
+          const memberId = row[1];
+          if (!xDataByMember[memberId]) {
+            xDataByMember[memberId] = [];
+          }
+          xDataByMember[memberId].push(row);
+        }
       }
 
       // Process each creator
       for (const creator of creators) {
-        const memberRows = dataByMember[creator.id];
-        if (!memberRows || memberRows.length === 0) continue;
+        const youtubeRows = youtubeDataByMember[creator.id];
+        const xRows = xDataByMember[creator.id];
 
-        // Get latest row
-        const latestRow = memberRows[memberRows.length - 1];
+        if ((!youtubeRows || youtubeRows.length === 0) && (!xRows || xRows.length === 0)) {
+          continue;
+        }
 
-        const subscriberCountStr = latestRow[3];
-        const videoCountStr = latestRow[4];
-        const viewCountStr = latestRow[5];
+        const stats: Partial<CreatorStatistics> = {};
 
-        let yesterdaysSubscriberCount = 0;
-        let yesterdaysVideoCount = 0;
-        let yesterdaysViewCount = 0;
-        let foundYesterday = false;
+        // 1. Process YouTube stats
+        if (youtubeRows && youtubeRows.length > 0) {
+          const latestRow = youtubeRows[youtubeRows.length - 1];
+          const subscriberCountStr = latestRow[3];
+          const videoCountStr = latestRow[4];
+          const viewCountStr = latestRow[5];
 
-        // Find yesterday's data
-        // Search backwards
-        for (let i = memberRows.length - 2; i >= 0; i--) {
-          const row = memberRows[i];
-          if (row[0] === yesterdayStr) {
-            // Index 0 is Date
-            yesterdaysSubscriberCount = parseInt(row[3].replace(/,/g, ''), 10);
-            yesterdaysVideoCount = parseInt(row[4].replace(/,/g, ''), 10);
-            yesterdaysViewCount = parseInt(row[5].replace(/,/g, ''), 10);
-            foundYesterday = true;
-            break;
+          let yesterdaysSubscriberCount = 0;
+          let yesterdaysVideoCount = 0;
+          let yesterdaysViewCount = 0;
+          let foundYesterday = false;
+
+          for (let i = youtubeRows.length - 2; i >= 0; i--) {
+            const row = youtubeRows[i];
+            if (row[0] === yesterdayStr) {
+              yesterdaysSubscriberCount = parseInt(row[3].replace(/,/g, ''), 10);
+              yesterdaysVideoCount = parseInt(row[4].replace(/,/g, ''), 10);
+              yesterdaysViewCount = parseInt(row[5].replace(/,/g, ''), 10);
+              foundYesterday = true;
+              break;
+            }
           }
+
+          if (!foundYesterday && youtubeRows.length >= 2) {
+            const prevRow = youtubeRows[youtubeRows.length - 2];
+            yesterdaysSubscriberCount = parseInt(prevRow[3].replace(/,/g, ''), 10);
+            yesterdaysVideoCount = parseInt(prevRow[4].replace(/,/g, ''), 10);
+            yesterdaysViewCount = parseInt(prevRow[5].replace(/,/g, ''), 10);
+          }
+
+          const currentSubscribers = parseInt(subscriberCountStr.replace(/,/g, ''), 10);
+          const subGrowth = currentSubscribers - yesterdaysSubscriberCount;
+
+          const currentVideos = parseInt(videoCountStr.replace(/,/g, ''), 10);
+          const videoGrowth = currentVideos - yesterdaysVideoCount;
+
+          const currentViews = parseInt(viewCountStr.replace(/,/g, ''), 10);
+          const viewGrowth = currentViews - yesterdaysViewCount;
+
+          stats.subscriberCount = subscriberCountStr;
+          stats.videoCount = videoCountStr;
+          stats.viewCount = viewCountStr;
+          stats.subscriberGrowth = subGrowth;
+          stats.videoGrowth = videoGrowth;
+          stats.viewGrowth = viewGrowth;
+        } else {
+          stats.subscriberCount = '';
+          stats.videoCount = '';
+          stats.viewCount = '';
         }
 
-        // Fallback to previous record if yesterday not found
-        if (!foundYesterday && memberRows.length >= 2) {
-          const prevRow = memberRows[memberRows.length - 2];
-          yesterdaysSubscriberCount = parseInt(
-            prevRow[3].replace(/,/g, ''),
-            10,
-          );
-          yesterdaysVideoCount = parseInt(prevRow[4].replace(/,/g, ''), 10);
-          yesterdaysViewCount = parseInt(prevRow[5].replace(/,/g, ''), 10);
+        // 2. Process X stats
+        if (xRows && xRows.length > 0) {
+          const latestRow = xRows[xRows.length - 1];
+          const followersCountStr = latestRow[3];
+          const tweetCountStr = latestRow[4];
+          const listedCountStr = latestRow[5];
+          const followingCountStr = latestRow[6];
+
+          let yesterdaysFollowersCount = 0;
+          let yesterdaysTweetCount = 0;
+          let yesterdaysListedCount = 0;
+          let foundYesterday = false;
+
+          for (let i = xRows.length - 2; i >= 0; i--) {
+            const row = xRows[i];
+            if (row[0] === yesterdayStr) {
+              yesterdaysFollowersCount = parseInt(row[3].replace(/,/g, ''), 10);
+              yesterdaysTweetCount = parseInt(row[4].replace(/,/g, ''), 10);
+              yesterdaysListedCount = parseInt(row[5].replace(/,/g, ''), 10);
+              foundYesterday = true;
+              break;
+            }
+          }
+
+          if (!foundYesterday && xRows.length >= 2) {
+            const prevRow = xRows[xRows.length - 2];
+            yesterdaysFollowersCount = parseInt(prevRow[3].replace(/,/g, ''), 10);
+            yesterdaysTweetCount = parseInt(prevRow[4].replace(/,/g, ''), 10);
+            yesterdaysListedCount = parseInt(prevRow[5].replace(/,/g, ''), 10);
+          }
+
+          const currentFollowers = parseInt(followersCountStr.replace(/,/g, ''), 10);
+          const followersGrowth = currentFollowers - yesterdaysFollowersCount;
+
+          const currentTweets = parseInt(tweetCountStr.replace(/,/g, ''), 10);
+          const tweetsGrowth = currentTweets - yesterdaysTweetCount;
+
+          const currentListed = parseInt(listedCountStr.replace(/,/g, ''), 10);
+          const listedGrowth = currentListed - yesterdaysListedCount;
+
+          stats.xFollowersCount = followersCountStr;
+          stats.xTweetCount = tweetCountStr;
+          stats.xListedCount = listedCountStr;
+          stats.xFollowingCount = followingCountStr;
+          stats.xFollowersGrowth = followersGrowth;
+          stats.xTweetsGrowth = tweetsGrowth;
+          stats.xListedGrowth = listedGrowth;
         }
 
-        const currentSubscribers = parseInt(
-          subscriberCountStr.replace(/,/g, ''),
-          10,
-        );
-        const subGrowth = currentSubscribers - yesterdaysSubscriberCount;
-
-        const currentVideos = parseInt(videoCountStr.replace(/,/g, ''), 10);
-        const videoGrowth = currentVideos - yesterdaysVideoCount;
-
-        const currentViews = parseInt(viewCountStr.replace(/,/g, ''), 10);
-        const viewGrowth = currentViews - yesterdaysViewCount;
-
-        results[creator.id] = {
-          subscriberCount: subscriberCountStr,
-          videoCount: videoCountStr,
-          viewCount: viewCountStr,
-          subscriberGrowth: subGrowth,
-          videoGrowth: videoGrowth,
-          viewGrowth: viewGrowth,
-        };
+        results[creator.id] = stats as CreatorStatistics;
       }
     } catch (e) {
       this.logger.error('Error fetching/parsing spreadsheet.', e);
-      // Fail silently or return empty, depending on requirements, but error log is good
     }
 
     // Save to cache

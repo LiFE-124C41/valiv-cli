@@ -41,6 +41,25 @@ const GrowthIndicator: React.FC<GrowthIndicatorProps> = ({ value }) => {
   );
 };
 
+const getCompactStatsText = (stats: CreatorStatistics, isDetail: boolean = false): string => {
+  const parts = [];
+  if (stats.subscriberCount) {
+    const ytFormatted = formatSubscriberCount(stats.subscriberCount, isDetail);
+    const growth = stats.subscriberGrowth && stats.subscriberGrowth !== 0
+      ? `(${stats.subscriberGrowth > 0 ? '+' : ''}${stats.subscriberGrowth.toLocaleString()})`
+      : '';
+    parts.push(`YT: ${ytFormatted}${growth ? ' ' + growth : ''}`);
+  }
+  if (stats.xFollowersCount) {
+    const xFormatted = formatSubscriberCount(stats.xFollowersCount!, isDetail);
+    const growth = stats.xFollowersGrowth && stats.xFollowersGrowth !== 0
+      ? `(${stats.xFollowersGrowth > 0 ? '+' : ''}${stats.xFollowersGrowth.toLocaleString()})`
+      : '';
+    parts.push(`X: ${xFormatted}${growth ? ' ' + growth : ''}`);
+  }
+  return parts.length > 0 ? ` [${parts.join(' | ')}]` : '';
+};
+
 const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
   configRepo,
   spreadsheetService,
@@ -107,7 +126,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
     return (
       <Box padding={1}>
         <Text color="green">
-          <Spinner type="dots" /> Updating subscriber counts...
+          <Spinner type="dots" /> Updating subscriber and follower counts...
         </Text>
       </Box>
     );
@@ -171,7 +190,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
         label:
           c.name +
           (channelStats[c.id]
-            ? ` [${formatSubscriberCount(channelStats[c.id].subscriberCount, detail)}]`
+            ? getCompactStatsText(channelStats[c.id], detail)
             : ''),
         value: c.id,
       }));
@@ -237,36 +256,81 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
 
                 {channelStats[creator.id] && (
                   <Box marginLeft={2} flexDirection="column" marginBottom={1}>
-                    <Text>
-                      👥 Subscribers:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].subscriberCount,
-                        true,
-                      )}
-                      <GrowthIndicator
-                        value={channelStats[creator.id].subscriberGrowth}
-                      />
-                    </Text>
-                    <Text>
-                      👀 Views:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].viewCount,
-                        true,
-                      )}
-                      <GrowthIndicator
-                        value={channelStats[creator.id].viewGrowth}
-                      />
-                    </Text>
-                    <Text>
-                      📺 Videos:{' '}
-                      {formatSubscriberCount(
-                        channelStats[creator.id].videoCount,
-                        true,
-                      )}
-                      <GrowthIndicator
-                        value={channelStats[creator.id].videoGrowth}
-                      />
-                    </Text>
+                    {channelStats[creator.id].subscriberCount !== '' && (
+                      <>
+                        <Text>
+                          👥 Subscribers:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].subscriberCount,
+                            true,
+                          )}
+                          <GrowthIndicator
+                            value={channelStats[creator.id].subscriberGrowth}
+                          />
+                        </Text>
+                        <Text>
+                          👀 Views:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].viewCount,
+                            true,
+                          )}
+                          <GrowthIndicator
+                            value={channelStats[creator.id].viewGrowth}
+                          />
+                        </Text>
+                        <Text>
+                          📺 Videos:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].videoCount,
+                            true,
+                          )}
+                          <GrowthIndicator
+                            value={channelStats[creator.id].videoGrowth}
+                          />
+                        </Text>
+                      </>
+                    )}
+                    {channelStats[creator.id].xFollowersCount !== undefined && (
+                      <>
+                        <Text>
+                          🐦 X Followers:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].xFollowersCount!,
+                            true,
+                          )}
+                          <GrowthIndicator
+                            value={channelStats[creator.id].xFollowersGrowth}
+                          />
+                        </Text>
+                        <Text>
+                          📝 X Tweets:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].xTweetCount || '0',
+                            true,
+                          )}
+                          <GrowthIndicator
+                            value={channelStats[creator.id].xTweetsGrowth}
+                          />
+                        </Text>
+                        <Text>
+                          📁 X Listed:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].xListedCount || '0',
+                            true,
+                          )}
+                          <GrowthIndicator
+                            value={channelStats[creator.id].xListedGrowth}
+                          />
+                        </Text>
+                        <Text>
+                          👤 X Following:{' '}
+                          {formatSubscriberCount(
+                            channelStats[creator.id].xFollowingCount || '0',
+                            true,
+                          )}
+                        </Text>
+                      </>
+                    )}
                   </Box>
                 )}
                 <Box marginLeft={2} flexDirection="column">
@@ -294,21 +358,13 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                 </Text>
                 {channelStats[creator.id] && (
                   <Text color="yellow">
-                    {' '}
-                    [
-                    {formatSubscriberCount(
-                      channelStats[creator.id].subscriberCount,
-                      false,
-                    )}
-                    ]
-                    <GrowthIndicator
-                      value={channelStats[creator.id].subscriberGrowth}
-                    />
+                    {getCompactStatsText(channelStats[creator.id], false)}
                   </Text>
                 )}
                 <Text> - </Text>
                 <Text dimColor>
                   {creator.youtubeChannelId ? 'YT ' : ''}
+                  {creator.xUsername ? 'X ' : ''}
                   {creator.calendarUrl ? 'Cal ' : ''}
                 </Text>
               </Box>
