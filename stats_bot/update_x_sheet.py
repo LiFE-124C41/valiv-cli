@@ -65,35 +65,55 @@ def fetch_x_stats(username, api_key):
             with urllib.request.urlopen(req) as response:
                 data = json.loads(response.read().decode('utf-8'))
                 
-                # ルートが "user" オブジェクトに包まれている場合の対応
-                if "user" in data and isinstance(data["user"], dict):
+                # ルートが "data" または "user" オブジェクトに包まれている場合の対応
+                if "data" in data and isinstance(data["data"], dict):
+                    user_data = data["data"]
+                elif "user" in data and isinstance(data["user"], dict):
                     user_data = data["user"]
                 else:
                     user_data = data
                 
-                # APIレスポンス構造の解析と安全な抽出
-                followers = user_data.get("followers_count")
-                tweets = user_data.get("tweet_count")
-                listed = user_data.get("listed_count")
-                following = user_data.get("following_count")
+                # 1. まず public_metrics からの抽出を試みる
+                metrics = user_data.get("public_metrics") or {}
                 
-                # public_metrics 等のネストした構造のケースに対応
-                if followers is None and "public_metrics" in user_data:
-                    metrics = user_data["public_metrics"]
-                    followers = metrics.get("followers_count")
-                    tweets = metrics.get("tweet_count") or metrics.get("post_count")
-                    listed = metrics.get("listed_count")
-                    following = metrics.get("following_count")
+                # 2. 各フィールドについて、複数のキーのバリエーションを試す
+                followers = (
+                    user_data.get("followers_count")
+                    or user_data.get("followersCount")
+                    or user_data.get("followers")
+                    or metrics.get("followers_count")
+                    or metrics.get("followersCount")
+                )
                 
-                # 代替キー名の対応
-                if tweets is None:
-                    tweets = user_data.get("post_count") or user_data.get("statuses_count")
-                if followers is None:
-                    followers = user_data.get("followers")
-                if following is None:
-                    following = user_data.get("friends_count") or user_data.get("following")
-                if listed is None:
-                    listed = user_data.get("listed")
+                tweets = (
+                    user_data.get("tweet_count")
+                    or user_data.get("tweetCount")
+                    or user_data.get("statuses_count")
+                    or user_data.get("statusesCount")
+                    or user_data.get("post_count")
+                    or user_data.get("postCount")
+                    or metrics.get("tweet_count")
+                    or metrics.get("tweetCount")
+                    or metrics.get("post_count")
+                )
+                
+                listed = (
+                    user_data.get("listed_count")
+                    or user_data.get("listedCount")
+                    or user_data.get("listed")
+                    or metrics.get("listed_count")
+                    or metrics.get("listedCount")
+                )
+                
+                following = (
+                    user_data.get("following_count")
+                    or user_data.get("followingCount")
+                    or user_data.get("friends_count")
+                    or user_data.get("friendsCount")
+                    or user_data.get("following")
+                    or metrics.get("following_count")
+                    or metrics.get("followingCount")
+                )
                 
                 if followers is None:
                     print(f"[{username}] 警告: followers_count がレスポンスに見つかりません。レスポンスデータの一部: {json.dumps(data)[:300]}")
