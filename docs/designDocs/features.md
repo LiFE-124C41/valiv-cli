@@ -53,7 +53,7 @@
     - **Google Spreadsheet IDが設定されている場合**:
         - YouTube の登録者数（Subscribers）および X (Twitter) のフォロワー数（Followers）を並べて表示します。
         - **前日比（Growth）**: 前日からの増加数を `(+N)` の形式で表示します。
-        - 詳細モード（`--detail`）では、YouTube の総再生回数（Views）、動画投稿数（Videos）、および X (Twitter) の総ポスト数（Tweets）、リスト登録数（Listed）、フォロー数（Following）も追加表示され、それぞれ前日比も計算されます（フォロー数は現在値のみ）。
+        - 詳細モード（`--detail`）では、YouTube の総再生回数（Views）、動画投稿数（Videos）、および X (Twitter) の総ポスト数（Tweets）、リスト登録数（Listed、現在はデータ取得不具合のため一時非表示）、フォロー数（Following）も追加表示され、それぞれ前日比も計算されます（フォロー数は現在値のみ）。
 - **引数**:
     - `--detail` (`-d`): 詳細情報を表示します。登録者数は省略せず（例: `100,000`）表示されます。
     - `--interactive` (`-i`): インタラクティブモードを有効にします。

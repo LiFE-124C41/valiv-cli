@@ -317,6 +317,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                             value={channelStats[creator.id].xTweetsGrowth}
                           />
                         </Text>
+                        {/*
                         <Text>
                           📁 X Listed:{' '}
                           {formatSubscriberCount(
@@ -327,6 +328,7 @@ const CreatorListScreen: React.FC<CreatorListScreenProps> = ({
                             value={channelStats[creator.id].xListedGrowth}
                           />
                         </Text>
+                        */}
                         <Text>
                           👤 X Following:{' '}
                           {formatSubscriberCount(
