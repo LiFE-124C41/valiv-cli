@@ -59,7 +59,7 @@
     "youtube-transcript-plus": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.2",
+    "@types/node": "^26.0.0",
     "@types/react": "^19.2.7",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.4",
