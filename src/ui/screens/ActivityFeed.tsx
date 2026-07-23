@@ -3,12 +3,11 @@ import { Text, Box, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import SelectInput from 'ink-select-input';
 import { marked } from 'marked';
-import TerminalRenderer from 'marked-terminal';
+import { TerminalRenderer } from '../../utils/terminal-renderer.js';
 import fs from 'fs';
 
 marked.setOptions({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderer: new TerminalRenderer() as any,
+  renderer: new TerminalRenderer(),
 });
 import {
   IConfigRepository,
