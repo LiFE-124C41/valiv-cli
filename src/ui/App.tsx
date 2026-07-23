@@ -35,13 +35,7 @@ interface AppProps {
 }
 
 type ScreenName =
-  | 'init'
-  | 'add'
-  | 'remove'
-  | 'list'
-  | 'check'
-  | 'schedule'
-  | 'export';
+  'init' | 'add' | 'remove' | 'list' | 'check' | 'schedule' | 'export';
 
 const App: React.FC<AppProps> = ({
   command,
