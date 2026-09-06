@@ -28,6 +28,7 @@ jobs:
         run: python stats_bot/update_sheet.py
 
       - name: X(Twitter)統計スクリプトの実行
+        if: ${{ !cancelled() }}
         env:
           GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
           TWITTER_API_IO_KEY: ${{ secrets.TWITTER_API_IO_KEY }}
